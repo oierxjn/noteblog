@@ -112,6 +112,24 @@ def create_admin_user():
         print(f"管理员用户创建失败: {e}")
         db.session.rollback()
 
+def init_plugins_and_themes():
+    """初始化插件和主题系统"""
+    try:
+        # 初始化插件管理器
+        from app.services.plugin_manager import plugin_manager
+        plugin_manager.init_app(app)
+        print("插件管理器初始化成功")
+        
+        # 初始化主题管理器
+        from app.services.theme_manager import theme_manager
+        theme_manager.init_app(app)
+        print("主题管理器初始化成功")
+        
+        return True
+    except Exception as e:
+        print(f"插件和主题系统初始化失败: {e}")
+        return False
+
 # 全局变量来跟踪初始化状态
 _db_initialized = False
 
@@ -134,6 +152,9 @@ def ensure_database_initialized():
         
         # 创建管理员用户
         create_admin_user()
+        
+        # 在数据库初始化完成后，初始化插件和主题系统
+        init_plugins_and_themes()
         
         _db_initialized = True
         return True
