@@ -50,6 +50,8 @@ PYTHONPATH = /var/task
 
 **重要**：将 `DATABASE_URL` 设置为 `${POSTGRES_URL}`，这样它会自动使用 Vercel Postgres 的连接字符串。
 
+**注意**：应用会自动将 `postgres://` 转换为 `postgresql://` 以确保SQLAlchemy兼容性。
+
 ### 4. 更新依赖
 
 确保您的 `requirements.txt` 包含 PostgreSQL 驱动：

@@ -20,6 +20,10 @@ os.environ.setdefault('FLASK_INSTANCE_PATH', temp_dir)
 # 如果没有设置，将使用应用默认配置
 database_url = os.getenv('DATABASE_URL')
 if database_url:
+    # 确保数据库URI格式正确
+    if database_url.startswith('postgres://'):
+        # 将 postgres:// 转换为 postgresql:// 以确保兼容性
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
     print(f"使用环境变量中的数据库配置: {database_url.split('://')[0]}://***")
     os.environ.setdefault('DATABASE_URL', database_url)
 else:
