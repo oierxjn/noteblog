@@ -68,7 +68,14 @@ Noteblog 在 Vercel 上默认使用 SQLite 数据库，无需额外配置：
 ### Serverless 环境限制
 - Vercel 使用 serverless 架构，应用会在不活动时休眠
 - 首次访问可能会有冷启动延迟
-- 文件系统写入可能受限，建议使用数据库存储
+- 文件系统写入可能受限，已配置为使用临时目录进行数据库操作
+- SQLite 数据库文件存储在 `/tmp/` 目录下（serverless环境的可写区域）
+
+### 修复的只读文件系统问题
+✅ **已解决**：应用已针对 Vercel 的只读文件系统环境进行了优化
+- 使用 `tempfile.gettempdir()` 作为实例路径
+- SQLite 数据库存储在可写的临时目录中
+- 避免了 `OSError: [Errno 30] Read-only file system` 错误
 
 ### 静态文件处理
 - 主题静态文件通过 Flask 路由提供

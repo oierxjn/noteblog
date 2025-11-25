@@ -4,10 +4,12 @@ Vercel Serverless Function 入口文件
 """
 import sys
 import os
-from app import create_app, db
-from app.models.setting import SettingManager
-from app.models.user import User
-from app.models.setting import Setting
+import tempfile
+from flask import Flask, send_from_directory
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_login import LoginManager
+from flask_cors import CORS
 
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -15,11 +17,57 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 # 设置环境变量以跳过插件初始化（避免在serverless环境中出现问题）
 os.environ.setdefault('SKIP_PLUGIN_INIT', '1')
 
-# 创建 Flask 应用
-app = create_app()
+# 为 Vercel 环境设置可写的临时目录
+os.environ.setdefault('FLASK_INSTANCE_PATH', tempfile.gettempdir())
+
+# 手动创建应用实例，针对 Vercel 环境优化
+def create_vercel_app():
+    """为 Vercel 环境创建 Flask 应用"""
+    app = Flask(__name__, instance_path=tempfile.gettempdir())
+    
+    # 配置
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///' + os.path.join(tempfile.gettempdir(), 'noteblog.db'))
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    
+    # 初始化扩展
+    db = SQLAlchemy()
+    migrate = Migrate()
+    login_manager = LoginManager()
+    cors = CORS()
+    
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+    cors.init_app(app)
+    
+    # 登录管理器配置
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message = '请先登录以访问此页面。'
+    
+    # 注册蓝图
+    from app.views import main, auth, admin, api
+    app.register_blueprint(main.bp)
+    app.register_blueprint(auth.bp, url_prefix='/auth')
+    app.register_blueprint(admin.bp, url_prefix='/admin')
+    app.register_blueprint(api.bp, url_prefix='/api')
+    
+    # 提供主题静态文件的路由
+    @app.route('/themes/<theme_name>/static/<path:filename>')
+    def theme_static(theme_name, filename):
+        themes_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'themes')
+        static_dir = os.path.join(themes_dir, theme_name, 'static')
+        from flask import send_from_directory
+        return send_from_directory(static_dir, filename)
+    
+    return app, db
+
+# 创建 Flask 应用和数据库实例
+app, db = create_vercel_app()
 
 def init_default_settings():
     """初始化默认设置"""
+    from app.models.setting import Setting
     default_settings = [
         ('site_title', 'Noteblog', 'string', '网站标题', True),
         ('site_description', '一个基于Flask的博客系统', 'string', '网站描述', True),
@@ -46,6 +94,7 @@ def init_default_settings():
 
 def create_admin_user():
     """创建默认管理员用户"""
+    from app.models.user import User
     admin = User.query.filter_by(is_admin=True).first()
     if not admin:
         admin = User(
