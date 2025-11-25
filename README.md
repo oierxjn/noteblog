@@ -357,6 +357,40 @@ UPDATE setting SET value = '15' WHERE key_name = 'posts_per_page';
 
 ## 🚀 部署指南
 
+### Vercel 部署（推荐）
+
+Noteblog 支持 Vercel 无服务器部署，具有自动扩缩容和全球 CDN 加速的优势。
+
+#### 快速部署
+
+1. **安装 Vercel CLI**
+```bash
+npm i -g vercel
+```
+
+2. **部署应用**
+```bash
+vercel
+```
+
+3. **配置数据库（重要）**
+为了解决数据持久化问题，强烈建议使用 Vercel Postgres：
+
+- 在 Vercel Dashboard 中创建 Postgres 数据库
+- 设置环境变量 `DATABASE_URL = ${POSTGRES_URL}`
+- 详细步骤请参考 [VERCEL_POSTGRES_SETUP.md](VERCEL_POSTGRES_SETUP.md)
+
+#### 环境变量配置
+
+在 Vercel 项目设置中配置以下环境变量：
+```
+DATABASE_URL = ${POSTGRES_URL}  # 使用 Vercel Postgres
+SECRET_KEY = your-secret-key-here
+FLASK_ENV = production
+SKIP_PLUGIN_INIT = 1
+PYTHONPATH = /var/task
+```
+
 ### 生产环境部署
 
 1. **使用Docker Compose**

@@ -16,23 +16,16 @@ os.environ.setdefault('SKIP_PLUGIN_INIT', '1')
 temp_dir = tempfile.gettempdir()
 os.environ.setdefault('FLASK_INSTANCE_PATH', temp_dir)
 
-# 在 Vercel serverless 环境中，优先使用内存数据库
-# 因为无服务器环境的文件系统是临时的
-use_memory_db = os.getenv('USE_MEMORY_DB', 'true').lower() == 'true'
-
-if use_memory_db:
-    # 使用内存数据库 - 最适合无服务器环境
-    db_uri = 'sqlite:///:memory:'
-    print("使用内存数据库")
+# 数据库配置 - 优先使用环境变量中的 DATABASE_URL
+# 如果没有设置，将使用应用默认配置
+database_url = os.getenv('DATABASE_URL')
+if database_url:
+    print(f"使用环境变量中的数据库配置: {database_url.split('://')[0]}://***")
+    os.environ.setdefault('DATABASE_URL', database_url)
 else:
-    # 尝试使用临时文件数据库
-    db_path = os.path.join(temp_dir, 'noteblog.db')
-    db_uri = f'sqlite:///{db_path}'
-    print(f"使用文件数据库: {db_path}")
+    print("警告：未设置 DATABASE_URL 环境变量，将使用应用默认数据库配置")
 
-os.environ.setdefault('DATABASE_URL', db_uri)
-
-# 确保数据库目录存在
+# 确保临时目录存在
 os.makedirs(temp_dir, exist_ok=True)
 
 # 使用原有的应用工厂函数，但修改实例路径
@@ -41,23 +34,12 @@ from app import create_app, db
 # 创建 Flask 应用 - 使用临时目录作为实例路径
 app = create_app()
 
-# 强制设置数据库路径
-app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+# 设置实例路径
 app.config['INSTANCE_PATH'] = temp_dir
 
-# 如果使用文件数据库，确保文件可以创建
-if not use_memory_db:
-    try:
-        # 尝试创建数据库文件以确保权限正确
-        import sqlite3
-        conn = sqlite3.connect(db_path)
-        conn.close()
-        print(f"数据库文件创建成功: {db_path}")
-    except Exception as e:
-        print(f"数据库文件创建失败: {e}")
-        # 如果无法创建文件，切换到内存数据库
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        print("切换到内存数据库")
+# 如果设置了数据库URL，使用它；否则使用应用默认配置
+if database_url:
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 
 def init_default_settings():
     """初始化默认设置"""

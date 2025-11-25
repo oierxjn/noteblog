@@ -8,6 +8,7 @@ SQLAlchemy
 Werkzeug
 WTForms
 PyMySQL
+psycopg2-binary
 python-dotenv
 Jinja2
 Markdown
