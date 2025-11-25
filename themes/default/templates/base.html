@@ -13,10 +13,10 @@
     {% endif %}
     
     <!-- CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/element-plus@2.4.0/dist/index.css">
+    <link rel="stylesheet" href="https://npmmirror.com/packages/element-plus/files/2.4.0/dist/index.css">
     <link rel="stylesheet" href="/themes/default/static/css/style.css">
     <link rel="stylesheet" href="/themes/default/static/css/markdown.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     
     {% block head %}{% endblock %}
     
@@ -336,11 +336,11 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="https://unpkg.com/vue@3.3.0/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/element-plus@2.4.0/dist/index.full.js"></script>
-    <script src="https://unpkg.com/@element-plus/icons-vue@2.1.0/dist/index.iife.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="https://npmmirror.com/packages/vue/files/3.3.0/dist/vue.global.js"></script>
+    <script src="https://npmmirror.com/packages/element-plus/files/2.4.0/dist/index.full.js"></script>
+    <script src="https://npmmirror.com/packages/@element-plus/icons-vue/files/2.1.0/dist/index.iife.min.js"></script>
+    <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <script src="/themes/default/static/js/app.js"></script>
     
     <!-- 全局 Vue 应用：提供登录/注册以及通用方法，保证所有页面都有 Vue 上下文 -->
@@ -1011,11 +1011,11 @@
                         // 检查是否已经存在script标签
                         if (!document.querySelector('script[src*="katex.min.js"]')) {
                             const script = document.createElement('script');
-                            script.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js';
+                            script.src = 'https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js';
                             script.onload = () => {
                                 // 加载auto-render扩展
                                 const renderScript = document.createElement('script');
-                                renderScript.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js';
+                                renderScript.src = 'https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js';
                                 renderScript.onload = () => {
                                     console.log('KaTeX加载完成，开始渲染数学公式');
                                     setTimeout(() => this.renderMath(), 100);
