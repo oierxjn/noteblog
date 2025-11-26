@@ -68,8 +68,8 @@
                         <el-dropdown>
                             <span class="el-dropdown-link">
                                 {{ current_user.display_name or current_user.username }}
-                                <el-icon class="el-icon--right">
-                                    <arrow-down />
+                                <el-icon class="el-icon--right" :size="dropdownIcon.size" :color="dropdownIcon.color">
+                                    <ArrowDown />
                                 </el-icon>
                             </span>
                             <template #dropdown>
@@ -176,6 +176,12 @@
                 </div>
             </div>
         </footer>
+
+        <div class="back-to-top" v-show="showBackToTop" @click="scrollToTop">
+            <el-icon>
+                <ArrowUp />
+            </el-icon>
+        </div>
         
         {% if not current_user.is_authenticated %}
         <!-- 登录对话框 -->
@@ -388,6 +394,8 @@
                     // 搜索和侧边栏相关属性
                     query: '',
                     showSidebar: true,
+                    dropdownIcon: { size: 16, color: '#606266' },
+                    showBackToTop: false,
                     // 表单验证规则
                     loginRules: {
                         username: [
@@ -477,6 +485,13 @@
                 
                 // 渲染数学公式
                 this.renderMath();
+
+                // 回到顶部按钮显示控制
+                this.updateBackToTopVisibility();
+                window.addEventListener('scroll', this.updateBackToTopVisibility, { passive: true });
+            },
+            beforeUnmount() {
+                window.removeEventListener('scroll', this.updateBackToTopVisibility);
             },
             computed: {
                 passwordStrength() {
@@ -513,6 +528,16 @@
                 }
             },
             methods: {
+                scrollToTop() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                },
+                updateBackToTopVisibility() {
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    this.showBackToTop = scrollTop > 300;
+                },
                 showLoginDialog() { this.loginDialogVisible = true },
                 showRegisterDialog() { this.registerDialogVisible = true },
                 showEditProfileDialog() { this.editProfileDialogVisible = true },
@@ -1123,7 +1148,25 @@
         
         // 注册Element Plus（这会自动注册所有组件）
         app.use(ElementPlus);
-        
+
+        // 注册 Element Plus 图标，避免模板中的 <ArrowDown /> 未解析
+        const iconsBundle = window.ElementPlusIconsVue || window.ElementPlusIcons;
+        if (iconsBundle) {
+            Object.entries(iconsBundle).forEach(([key, component]) => {
+                app.component(key, component);
+            });
+            if (iconsBundle.ArrowDown) {
+                // DOM 模板会将 <ArrowDown /> 正常化为小写标签
+                app.component('arrowdown', iconsBundle.ArrowDown);
+            }
+            if (iconsBundle.ArrowUp) {
+                // 同步注册 <ArrowUp /> 的小写形式以支持DOM模板解析
+                app.component('arrowup', iconsBundle.ArrowUp);
+            }
+        } else {
+            console.warn('ElementPlusIconsVue 未加载，图标组件不可用');
+        }
+
         app.mount('#app');
         // expose for debugging/tests
         window._noteblog_app = app;

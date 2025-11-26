@@ -117,7 +117,10 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
 <script>
 // 状态筛选
 document.getElementById('statusFilter').addEventListener('change', function() {

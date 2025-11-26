@@ -112,9 +112,11 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
 <script>
-// 状态筛选
 document.addEventListener('DOMContentLoaded', function() {
     const statusFilter = document.getElementById('statusFilter');
     if (statusFilter) {
@@ -132,7 +134,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// 审核通过
 function approveComment(commentId) {
     if (confirm('确定要通过此评论吗？')) {
         const form = document.createElement('form');
@@ -143,7 +144,6 @@ function approveComment(commentId) {
     }
 }
 
-// 标记为垃圾
 function markSpam(commentId) {
     if (confirm('确定要标记此评论为垃圾评论吗？')) {
         const form = document.createElement('form');
@@ -154,7 +154,6 @@ function markSpam(commentId) {
     }
 }
 
-// 删除评论
 function deleteComment(commentId) {
     if (confirm('确定要删除此评论吗？此操作不可恢复。')) {
         const form = document.createElement('form');

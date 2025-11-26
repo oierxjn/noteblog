@@ -151,13 +151,15 @@
         </div>
     </form>
 </div>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
 <script>
 const { createApp } = Vue;
-const app = createApp({
+const settingsApp = createApp({
     methods: {
         saveSettings() {
-            // 提交表单
             document.getElementById('settingsForm').submit();
         },
         resetSettings() {
@@ -180,8 +182,7 @@ const app = createApp({
     }
 });
 
-// 注册Element Plus
-app.use(ElementPlus);
-app.mount('.admin-settings');
+settingsApp.use(ElementPlus);
+settingsApp.mount('.admin-settings');
 </script>
 {% endblock %}

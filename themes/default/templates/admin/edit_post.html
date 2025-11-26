@@ -180,7 +180,10 @@
         </div>
     </form>
 </div>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
 <script src="https://unpkg.com/pinyin-pro"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -202,22 +205,38 @@ document.addEventListener('DOMContentLoaded', function() {
     function generateSlug() {
         if (!slugManuallyEdited && titleInput.value) {
             const { pinyin } = pinyinPro;
-            let slug = pinyin(titleInput.value, { 
+            let slug = pinyin(titleInput.value, {
                 toneType: 'none',
                 nonZh: 'consecutive',
-                v: true 
+                v: true
             });
-            
+
             slug = slug.toLowerCase()
-                      .replace(/\s+/g, '-')
-                      .replace(/[^a-z0-9-]/g, '')
-                      .replace(/-+/g, '-')
-                      .replace(/^-|-$/g, '');
-            
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z0-9-]/g, '')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+
             slugInput.value = slug;
             updateSlugPreview();
         }
     }
+
+    window.saveDraft = function() {
+        const form = document.getElementById('postForm');
+        const statusInput = form.querySelector('select[name="status"]');
+        statusInput.value = 'draft';
+        form.submit();
+    };
+
+    window.previewPost = function() {
+        const slugValue = slugInput.value.trim();
+        if (!slugValue) {
+            alert('请先填写文章别名');
+            return;
+        }
+        window.open(`/post/${slugValue}?preview=1`, '_blank');
+    };
 
     titleInput.addEventListener('input', generateSlug);
 
@@ -230,8 +249,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSlugPreview();
     });
 
-    // ... (rest of the script)
-    // Initial state
     updateSlugPreview();
 });
 </script>

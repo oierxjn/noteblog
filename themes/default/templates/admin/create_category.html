@@ -82,7 +82,10 @@
         </div>
     </form>
 </div>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
 <script src="https://fastly.jsdelivr.net/npm/pinyin-pro@latest/dist/index.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -104,18 +107,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function generateSlug() {
         if (!slugManuallyEdited && nameInput.value) {
             const { pinyin } = pinyinPro;
-            let slug = pinyin(nameInput.value, { 
+            let slug = pinyin(nameInput.value, {
                 toneType: 'none',
                 nonZh: 'consecutive',
-                v: true 
+                v: true
             });
-            
+
             slug = slug.toLowerCase()
-                      .replace(/\s+/g, '-')
-                      .replace(/[^a-z0-9-]/g, '')
-                      .replace(/-+/g, '-')
-                      .replace(/^-|-$/g, '');
-            
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z0-9-]/g, '')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+
             slugInput.value = slug;
             updateSlugPreview();
         }
@@ -132,7 +135,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSlugPreview();
     });
 
-    // Initial state
     updateSlugPreview();
 });
 </script>

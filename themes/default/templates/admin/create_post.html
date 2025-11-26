@@ -157,7 +157,10 @@
         </div>
     </form>
 </div>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
 <script src="https://unpkg.com/pinyin-pro"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -179,31 +182,29 @@ document.addEventListener('DOMContentLoaded', function() {
     function generateSlug() {
         if (!slugManuallyEdited && titleInput.value) {
             const { pinyin } = pinyinPro;
-            // 获取无声调拼音
-            let slug = pinyin(titleInput.value, { 
+            let slug = pinyin(titleInput.value, {
                 toneType: 'none',
                 nonZh: 'consecutive',
-                v: true 
+                v: true
             });
-            
-            // 处理 slug：转小写，空格变横杠，移除特殊字符
+
             slug = slug.toLowerCase()
-                      .replace(/\s+/g, '-')
-                      .replace(/[^a-z0-9-]/g, '')
-                      .replace(/-+/g, '-')
-                      .replace(/^-|-$/g, '');
-            
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z0-9-]/g, '')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+
             slugInput.value = slug;
             updateSlugPreview();
         }
     }
 
-    function saveDraft() {
+    window.saveDraft = function() {
         const form = document.getElementById('postForm');
         const statusInput = form.querySelector('select[name="status"]');
         statusInput.value = 'draft';
         form.submit();
-    }
+    };
 
     titleInput.addEventListener('input', generateSlug);
 
@@ -211,13 +212,11 @@ document.addEventListener('DOMContentLoaded', function() {
         slugManuallyEdited = true;
         if (slugInput.value === '') {
             slugManuallyEdited = false;
-            // 如果清空了，尝试重新生成
             generateSlug();
         }
         updateSlugPreview();
     });
 
-    // Initial state
     updateSlugPreview();
 });
 </script>

@@ -84,7 +84,10 @@
         </div>
     </form>
 </div>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
 <script src="https://fastly.jsdelivr.net/npm/pinyin-slug@0.8.0/dist/pinyin-slug.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -123,7 +126,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSlugPreview();
     });
 
-    // Initial state
     updateSlugPreview();
 });
 </script>

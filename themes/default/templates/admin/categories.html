@@ -61,9 +61,11 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
 <script>
-// 删除分类
 function deleteCategory(categoryId, categoryName) {
     if (confirm('确定要删除分类 "' + categoryName + '" 吗？\n\n注意：删除分类不会删除相关文章，但文章将失去分类归属。')) {
         const form = document.createElement('form');

@@ -103,17 +103,19 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
 <script>
 const { createApp } = Vue;
-const app = createApp({
+const themeApp = createApp({
     methods: {
         activateTheme(themeName) {
-            // 创建表单提交激活请求
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = `/admin/themes/${themeName}/activate`;
-            
+
             document.body.appendChild(form);
             form.submit();
         },
@@ -121,7 +123,6 @@ const app = createApp({
             this.$message.info('主题自定义功能开发中...');
         },
         previewTheme(themeName) {
-            // 在新窗口中预览主题
             window.open(`/?theme=${themeName}`, '_blank');
         },
         deleteTheme(themeName, displayName) {
@@ -141,8 +142,7 @@ const app = createApp({
     }
 });
 
-// 注册Element Plus
-app.use(ElementPlus);
-app.mount('.admin-themes');
+themeApp.use(ElementPlus);
+themeApp.mount('.admin-themes');
 </script>
 {% endblock %}

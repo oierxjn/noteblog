@@ -148,27 +148,26 @@ function bookmarkPost(postId) {
 }
 
 // 全局格式化日期函数
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = now - date;
-    
-    const seconds = Math.floor(diff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    
-    if (days > 30) {
-        return date.toLocaleDateString();
-    } else if (days > 0) {
-        return `${days}天前`;
-    } else if (hours > 0) {
-        return `${hours}小时前`;
-    } else if (minutes > 0) {
-        return `${minutes}分钟前`;
-    } else {
-        return '刚刚';
+function formatDate(input) {
+    if (!input) {
+        return '';
     }
+
+    const date = input instanceof Date ? input : new Date(input);
+    if (Number.isNaN(date.getTime())) {
+        return '';
+    }
+
+    const pad = (value) => String(value).padStart(2, '0');
+
+    const year = date.getFullYear();
+    const month = pad(date.getMonth() + 1);
+    const day = pad(date.getDate());
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+    const seconds = pad(date.getSeconds());
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
 // 全局滚动到顶部函数
@@ -181,42 +180,23 @@ function scrollToTop() {
 
 // 全局处理滚动函数
 function handleScroll() {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const appInstance = window._noteblog_app;
+    const proxy = appInstance && appInstance._instance ? appInstance._instance.proxy : null;
+
+    if (proxy && typeof proxy.updateBackToTopVisibility === 'function') {
+        proxy.updateBackToTopVisibility();
+        return;
+    }
+
     const backToTopButton = document.querySelector('.back-to-top');
-    
     if (backToTopButton) {
-        if (scrollTop > 300) {
-            backToTopButton.style.display = 'block';
-        } else {
-            backToTopButton.style.display = 'none';
-        }
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        backToTopButton.style.display = scrollTop > 300 ? 'flex' : 'none';
     }
 }
 
 // 页面加载完成后执行
 document.addEventListener('DOMContentLoaded', function() {
-    // 添加返回顶部按钮
-    const backToTopButton = document.createElement('div');
-    backToTopButton.className = 'back-to-top';
-    backToTopButton.innerHTML = '<i class="el-icon-arrow-up"></i>';
-    backToTopButton.onclick = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    };
-    document.body.appendChild(backToTopButton);
-    
-    // 监听滚动事件
-    window.addEventListener('scroll', function() {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        if (scrollTop > 300) {
-            backToTopButton.style.display = 'block';
-        } else {
-            backToTopButton.style.display = 'none';
-        }
-    });
-    
     // 初始化代码高亮
     if (typeof Prism !== 'undefined') {
         Prism.highlightAll();
@@ -275,7 +255,7 @@ style.textContent = `
         background: var(--primary-color, #409EFF);
         color: white;
         border-radius: 50%;
-        display: none;
+        display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
@@ -289,9 +269,17 @@ style.textContent = `
         transform: translateY(-2px);
         box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
-    
-    .back-to-top i {
+
+    .back-to-top .el-icon {
         font-size: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .back-to-top .el-icon svg {
+        width: 1em;
+        height: 1em;
     }
     
     .search-input {

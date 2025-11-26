@@ -147,19 +147,22 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
 <script>
 function filterUsers() {
     const statusFilter = document.getElementById('statusFilter').value;
     const url = new URL(window.location);
-    
+
     if (statusFilter) {
         url.searchParams.set('status', statusFilter);
     } else {
         url.searchParams.delete('status');
     }
-    
-    url.searchParams.delete('page'); // 重置到第一页
+
+    url.searchParams.delete('page');
     window.location.href = url.toString();
 }
 
@@ -177,11 +180,10 @@ function editUser(userId) {
 function toggleUserStatus(userId, username, isActive) {
     const action = isActive ? '禁用' : '激活';
     if (confirm(`确定要${action}用户 "${username}" 吗？`)) {
-        // 创建表单提交状态切换请求
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/admin/users/${userId}/toggle-status`;
-        
+
         document.body.appendChild(form);
         form.submit();
     }
