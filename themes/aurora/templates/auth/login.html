@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+
+{% block title %}登录 - {{ config.title }}{% endblock %}
+
+{% block head %}
+<style>
+.auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 200px);
+    padding: 2rem;
+}
+
+.auth-card {
+    background: var(--card-background);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+}
+
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.auth-header {
+    padding: 2rem 2rem 1rem;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.05), rgba(var(--secondary-color-rgb), 0.05));
+    border-bottom: 1px solid var(--border-color);
+}
+
+.auth-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.auth-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.auth-body {
+    padding: 2rem;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.form-input {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: var(--background-color);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.form-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.form-checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+
+.form-checkbox-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    user-select: none;
+}
+
+.auth-submit {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    padding: 0.875rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-submit::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.auth-submit:hover::before {
+    left: 100%;
+}
+
+.auth-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.auth-submit:active {
+    transform: translateY(0);
+}
+
+.auth-footer {
+    padding: 1.5rem 2rem;
+    background: var(--background-color);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.auth-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.auth-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.auth-link:hover {
+    color: var(--primary-color);
+}
+
+.auth-divider {
+    color: var(--border-color);
+}
+
+.social-login {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.social-title {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.social-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-button {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--background-color);
+    color: var(--text-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.social-button:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.alert-success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    color: #16a34a;
+}
+
+.alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #dc2626;
+}
+
+.alert-info {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: #2563eb;
+}
+
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 1rem;
+    }
+    
+    .auth-card {
+        max-width: 100%;
+    }
+    
+    .auth-header,
+    .auth-body,
+    .auth-footer {
+        padding: 1.5rem;
+    }
+    
+    .auth-links {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .social-buttons {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1 class="auth-title">欢迎回来</h1>
+                <p class="auth-subtitle">登录到您的账户</p>
+            </div>
+            
+            <div class="auth-body">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <form method="POST" class="auth-form">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-group">
+                        {{ form.username.label(class="form-label") }}
+                        {{ form.username(class="form-input", placeholder="请输入用户名或邮箱") }}
+                        {% if form.username.errors %}
+                            <div style="color: #dc2626; font-size: 0.85rem; margin-top: 0.25rem;">
+                                {{ form.username.errors[0] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-input", placeholder="请输入密码") }}
+                        {% if form.password.errors %}
+                            <div style="color: #dc2626; font-size: 0.85rem; margin-top: 0.25rem;">
+                                {{ form.password.errors[0] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-checkbox-group">
+                        {{ form.remember(class="form-checkbox") }}
+                        {{ form.remember.label(class="form-checkbox-label") }}
+                    </div>
+                    
+                    <button type="submit" class="auth-submit">
+                        登录
+                    </button>
+                </form>
+                
+                {% if config.enable_social_login %}
+                <div class="social-login">
+                    <p class="social-title">或使用以下方式登录</p>
+                    <div class="social-buttons">
+                        <a href="{{ url_for('auth.oauth_login', provider='github') }}" class="social-button">
+                            <span>🐙</span>
+                            <span>GitHub</span>
+                        </a>
+                        <a href="{{ url_for('auth.oauth_login', provider='google') }}" class="social-button">
+                            <span>🔍</span>
+                            <span>Google</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="auth-footer">
+                <div class="auth-links">
+                    <a href="{{ url_for('auth.register') }}" class="auth-link">注册账户</a>
+                    <span class="auth-divider">·</span>
+                    <a href="{{ url_for('auth.forgot_password') }}" class="auth-link">忘记密码</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 表单验证增强
+    const form = document.querySelector('.auth-form');
+    const usernameInput = document.querySelector('input[name="username"]');
+    const passwordInput = document.querySelector('input[name="password"]');
+    const submitButton = document.querySelector('.auth-submit');
+    
+    // 实时验证
+    function validateField(input) {
+        const value = input.value.trim();
+        const formGroup = input.closest('.form-group');
+        let errorDiv = formGroup.querySelector('.field-error');
+        
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.className = 'field-error';
+            errorDiv.style.cssText = 'color: #dc2626; font-size: 0.85rem; margin-top: 0.25rem;';
+            formGroup.appendChild(errorDiv);
+        }
+        
+        if (value === '') {
+            errorDiv.textContent = '此字段为必填项';
+            input.style.borderColor = '#dc2626';
+            return false;
+        } else {
+            errorDiv.textContent = '';
+            input.style.borderColor = '';
+            return true;
+        }
+    }
+    
+    // 添加输入事件监听
+    usernameInput.addEventListener('blur', () => validateField(usernameInput));
+    passwordInput.addEventListener('blur', () => validateField(passwordInput));
+    
+    // 表单提交验证
+    form.addEventListener('submit', function(e) {
+        const isUsernameValid = validateField(usernameInput);
+        const isPasswordValid = validateField(passwordInput);
+        
+        if (!isUsernameValid || !isPasswordValid) {
+            e.preventDefault();
+            return;
+        }
+        
+        // 显示加载状态
+        submitButton.disabled = true;
+        submitButton.innerHTML = '登录中...';
+        
+        // 如果验证失败，恢复按钮状态
+        setTimeout(() => {
+            if (submitButton.disabled) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '登录';
+            }
+        }, 5000);
+    });
+    
+    // 自动聚焦到用户名输入框
+    usernameInput.focus();
+    
+    // 添加键盘快捷键
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && e.ctrlKey) {
+            form.submit();
+        }
+    });
+});
+</script>
+{% endblock %}

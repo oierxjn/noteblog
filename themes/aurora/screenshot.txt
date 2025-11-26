@@ -1,0 +1,23 @@
+Aurora Theme - Modern gradient design with aurora-like colors and smooth animations
+
+Features:
+- Beautiful gradient color scheme inspired by northern lights
+- Dark mode support with smooth transitions
+- Responsive design for all devices
+- Modern card-based layout
+- Smooth animations and micro-interactions
+- Clean typography and excellent readability
+- Advanced search functionality
+- Social sharing capabilities
+- Comment system integration
+- Mathematical formula support (KaTeX)
+- Code syntax highlighting
+- Image lazy loading
+- Reading progress indicator
+- Table of contents for long posts
+- Related posts suggestions
+- Tag cloud and category management
+- Archive timeline view
+- Customizable theme settings
+- SEO optimized structure
+- Performance optimized with minimal dependencies

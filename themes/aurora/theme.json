@@ -1,0 +1,97 @@
+{
+  "display_name": "极光主题",
+  "description": "一个现代化的极光主题，采用渐变色彩和流畅动画设计",
+  "version": "1.0.0",
+  "author": "Noteblog Team",
+  "author_website": "https://github.com/noteblog",
+  "license": "MIT",
+  "min_noteblog_version": "1.0.0",
+  "is_system": false,
+  "supports_widgets": true,
+  "supports_menus": true,
+  "supports_customizer": true,
+  "supports_post_formats": false,
+  "screenshot": "/themes/aurora/screenshot.png",
+  "demo_url": "",
+  "config_schema": {
+    "site_logo": {
+      "type": "text",
+      "label": "网站 Logo",
+      "description": "网站 Logo 图片 URL"
+    },
+    "site_favicon": {
+      "type": "text",
+      "label": "网站图标",
+      "description": "网站图标 URL"
+    },
+    "primary_color": {
+      "type": "color",
+      "label": "主题色",
+      "default": "#667eea"
+    },
+    "secondary_color": {
+      "type": "color",
+      "label": "辅助色",
+      "default": "#764ba2"
+    },
+    "accent_color": {
+      "type": "color",
+      "label": "强调色",
+      "default": "#f093fb"
+    },
+    "show_excerpt": {
+      "type": "checkbox",
+      "label": "显示文章摘要",
+      "default": true
+    },
+    "posts_per_page": {
+      "type": "number",
+      "label": "每页文章数量",
+      "default": 8,
+      "min": 1,
+      "max": 50
+    },
+    "show_sidebar": {
+      "type": "checkbox",
+      "label": "显示侧边栏",
+      "default": true
+    },
+    "sidebar_widgets": {
+      "type": "array",
+      "label": "侧边栏小工具",
+      "default": ["recent_posts", "categories", "tags"]
+    },
+    "footer_text": {
+      "type": "textarea",
+      "label": "页脚文本",
+      "default": "© 2025 Noteblog. Powered by Aurora Theme."
+    },
+    "analytics_code": {
+      "type": "textarea",
+      "label": "统计代码",
+      "description": "Google Analytics 或其他统计代码"
+    },
+    "enable_dark_mode": {
+      "type": "checkbox",
+      "label": "启用深色模式",
+      "default": true
+    },
+    "enable_animations": {
+      "type": "checkbox",
+      "label": "启用动画效果",
+      "default": true
+    },
+    "card_style": {
+      "type": "select",
+      "label": "卡片样式",
+      "options": ["rounded", "sharp", "glass"],
+      "default": "rounded"
+    },
+    "layout_style": {
+      "type": "select",
+      "label": "布局样式",
+      "options": ["wide", "boxed", "minimal"],
+      "default": "wide"
+    }
+  }
+}

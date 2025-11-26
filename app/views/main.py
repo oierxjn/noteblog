@@ -176,7 +176,8 @@ def search():
     page = request.args.get('page', 1, type=int)
     per_page = SettingManager.get('posts_per_page', 10)
     
-    posts = []
+    posts = None
+    results = []
     total = 0
     
     if query:
@@ -191,11 +192,13 @@ def search():
         ).order_by(Post.published_at.desc())
         
         posts = posts_query.paginate(page=page, per_page=per_page, error_out=False)
+        results = posts.items
         total = posts.total
     
     context = {
         'query': query,
         'posts': posts,
+        'results': results,
         'total': total,
         'site_title': f"搜索: {query} - {SettingManager.get('site_title', 'Noteblog')}",
         'current_user': current_user,

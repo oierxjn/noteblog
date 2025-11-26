@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+{% set _admin_page = true %}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}管理后台{% endblock %} - {{ config.title }}</title>
+    
+    <!-- 主题CSS -->
+    <link rel="stylesheet" href="{{ url_for('theme.static', filename='css/aurora.css') }}">
+    
+    <!-- 管理后台专用样式 -->
+    <style>
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+            background: var(--background-color);
+        }
+        
+        .admin-sidebar {
+            width: 250px;
+            background: var(--card-background);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .admin-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        .admin-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .admin-nav {
+            flex: 1;
+            padding: 1rem 0;
+            overflow-y: auto;
+        }
+        
+        .admin-nav-item {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            position: relative;
+        }
+        
+        .admin-nav-item:hover {
+            background: var(--background-color);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+        
+        .admin-nav-item.active {
+            background: var(--background-color);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .admin-nav-icon {
+            margin-right: 0.75rem;
+            width: 18px;
+            text-align: center;
+        }
+        
+        .admin-main {
+            flex: 1;
+            margin-left: 250px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .admin-topbar {
+            background: var(--card-background);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .admin-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .admin-breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .admin-breadcrumb a:hover {
+            color: var(--primary-color);
+        }
+        
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .admin-user-info {
+            text-align: right;
+        }
+        
+        .admin-user-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+        
+        .admin-user-role {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .admin-content {
+            flex: 1;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+        
+        .admin-page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .admin-page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-page-description {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        .admin-card {
+            background: var(--card-background);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .admin-card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .admin-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+        
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .admin-main {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .admin-content {
+                padding: 1rem;
+            }
+            
+            .admin-topbar {
+                padding: 1rem;
+            }
+        }
+        
+        /* 覆盖主题样式 */
+        .main-content {
+            max-width: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .sidebar {
+            display: none;
+        }
+        
+        .header {
+            display: none;
+        }
+        
+        .footer {
+            display: none;
+        }
+    </style>
+    
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- 侧边栏 -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="admin-header">
+                <h1 class="admin-title">
+                    <span>⚡</span>
+                    <span>{{ config.title }} 管理后台</span>
+                </h1>
+            </div>
+            
+            <nav class="admin-nav">
+                <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-item {{ 'active' if request.endpoint == 'admin.dashboard' }}">
+                    <span class="admin-nav-icon">📊</span>
+                    <span>仪表板</span>
+                </a>
+                
+                <a href="{{ url_for('admin.posts') }}" class="admin-nav-item {{ 'active' if request.endpoint.startswith('admin.posts') }}">
+                    <span class="admin-nav-icon">📝</span>
+                    <span>文章管理</span>
+                </a>
+                
+                <a href="{{ url_for('admin.categories') }}" class="admin-nav-item {{ 'active' if request.endpoint.startswith('admin.categories') }}">
+                    <span class="admin-nav-icon">📁</span>
+                    <span>分类管理</span>
+                </a>
+                
+                <a href="{{ url_for('admin.comments') }}" class="admin-nav-item {{ 'active' if request.endpoint.startswith('admin.comments') }}">
+                    <span class="admin-nav-icon">💬</span>
+                    <span>评论管理</span>
+                </a>
+                
+                <a href="{{ url_for('admin.users') }}" class="admin-nav-item {{ 'active' if request.endpoint.startswith('admin.users') }}">
+                    <span class="admin-nav-icon">👥</span>
+                    <span>用户管理</span>
+                </a>
+                
+                <a href="{{ url_for('admin.themes') }}" class="admin-nav-item {{ 'active' if request.endpoint.startswith('admin.themes') }}">
+                    <span class="admin-nav-icon">🎨</span>
+                    <span>主题管理</span>
+                </a>
+                
+                <a href="{{ url_for('admin.plugins') }}" class="admin-nav-item {{ 'active' if request.endpoint.startswith('admin.plugins') }}">
+                    <span class="admin-nav-icon">🔌</span>
+                    <span>插件管理</span>
+                </a>
+                
+                <a href="{{ url_for('admin.settings') }}" class="admin-nav-item {{ 'active' if request.endpoint.startswith('admin.settings') }}">
+                    <span class="admin-nav-icon">⚙️</span>
+                    <span>系统设置</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- 主内容区 -->
+        <main class="admin-main">
+            <!-- 顶部栏 -->
+            <header class="admin-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <div class="admin-breadcrumb">
+                        <a href="{{ url_for('admin.dashboard') }}">首页</a>
+                        {% block breadcrumb %}{% endblock %}
+                    </div>
+                </div>
+                
+                <div class="admin-user">
+                    <div class="admin-user-info">
+                        <div class="admin-user-name">{{ current_user.username }}</div>
+                        <div class="admin-user-role">{{ '管理员' if current_user.is_admin else '用户' }}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <a href="{{ url_for('main.index') }}" title="访问网站" style="color: var(--text-secondary); text-decoration: none;">
+                            <span>🌐</span>
+                        </a>
+                        <a href="{{ url_for('auth.profile') }}" title="个人资料" style="color: var(--text-secondary); text-decoration: none;">
+                            <span>👤</span>
+                        </a>
+                        <a href="{{ url_for('auth.logout') }}" title="退出登录" style="color: var(--text-secondary); text-decoration: none;">
+                            <span>🚪</span>
+                        </a>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- 页面内容 -->
+            <div class="admin-content">
+                {% block page_header %}
+                <div class="admin-page-header">
+                    <h1 class="admin-page-title">{% block page_title %}管理后台{% endblock %}</h1>
+                    <p class="admin-page-description">{% block page_description %}{% endblock %}</p>
+                </div>
+                {% endblock %}
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem;">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    <!-- 主题JavaScript -->
+    <script src="{{ url_for('theme.static', filename='js/aurora.js') }}"></script>
+    
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            sidebar.classList.toggle('open');
+        }
+        
+        // 点击外部关闭侧边栏
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('adminSidebar');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(e.target) && 
+                !toggle.contains(e.target) && 
+                sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        });
+        
+        // 响应式处理
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('adminSidebar');
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('open');
+            }
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

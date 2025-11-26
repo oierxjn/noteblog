@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}服务器错误 - {{ config.title }}{% endblock %}
+
+{% block head %}
+<style>
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    padding: 2rem;
+}
+
+.error-code {
+    font-size: 8rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    line-height: 1;
+    animation: shake 2s ease-in-out infinite;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0px); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.error-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.error-description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    max-width: 500px;
+    line-height: 1.6;
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 3rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background: var(--card-background);
+    color: var(--text-primary);
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.error-illustration {
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.error-illustration::before {
+    content: '⚡';
+    font-size: 6rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.1;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.1; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.2; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.error-info {
+    background: var(--card-background);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    max-width: 600px;
+    width: 100%;
+    border-left: 4px solid #ff6b6b;
+}
+
+.info-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-content {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+.error-id {
+    background: var(--background-color);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-align: left;
+    word-break: break-all;
+}
+
+.refresh-hint {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 217, 61, 0.1));
+    border-radius: 8px;
+    border: 1px solid rgba(255, 107, 107, 0.2);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.refresh-hint strong {
+    color: #ff6b6b;
+}
+
+@media (max-width: 768px) {
+    .error-code {
+        font-size: 6rem;
+    }
+    
+    .error-title {
+        font-size: 1.5rem;
+    }
+    
+    .error-description {
+        font-size: 1rem;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+    
+    .error-info {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="error-container">
+        <div class="error-illustration">
+            <div class="error-code">500</div>
+        </div>
+        
+        <h1 class="error-title">服务器内部错误</h1>
+        <p class="error-description">
+            抱歉，服务器遇到了一个意外错误，无法完成您的请求。我们的技术团队已经收到通知，正在努力解决这个问题。
+        </p>
+        
+        <div class="error-actions">
+            <a href="{{ url_for('main.index') }}" class="btn-primary">
+                <span>🏠</span>
+                <span>返回首页</span>
+            </a>
+            <button onclick="location.reload()" class="btn-secondary">
+                <span>🔄</span>
+                <span>刷新页面</span>
+            </button>
+        </div>
+        
+        <div class="error-info">
+            <h3 class="info-title">
+                <span>⚠️</span>
+                <span>错误信息</span>
+            </h3>
+            <div class="info-content">
+                这通常是由于服务器端的程序错误、数据库连接问题或临时系统故障导致的。大多数情况下，这个问题会在短时间内自动解决。
+            </div>
+            
+            {% if error_id %}
+            <div class="error-id">
+                错误ID: {{ error_id }}
+            </div>
+            {% endif %}
+            
+            <div class="refresh-hint">
+                <strong>建议：</strong>您可以稍后刷新页面重试，或者访问其他页面。如果问题持续存在，请联系网站管理员并提供上述错误ID。
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 自动重试功能
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = 5000; // 5秒
+    
+    function autoRetry() {
+        if (retryCount < maxRetries) {
+            retryCount++;
+            
+            // 显示重试提示
+            const retryHint = document.createElement('div');
+            retryHint.className = 'retry-hint';
+            retryHint.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            retryHint.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>🔄</span>
+                    <span>正在自动重试... (${retryCount}/${maxRetries})</span>
+                </div>
+            `;
+            
+            document.body.appendChild(retryHint);
+            
+            setTimeout(() => {
+                location.reload();
+            }, retryDelay);
+        }
+    }
+    
+    // 添加滑入动画
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // 10秒后自动重试
+    setTimeout(autoRetry, 10000);
+    
+    // 记录500错误（可选）
+    if (typeof gtag !== 'undefined') {
+        gtag('event', '500', {
+            'event_category': 'error',
+            'event_label': window.location.pathname
+        });
+    }
+    
+    // 键盘快捷键
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            location.reload();
+        }
+    });
+});
+</script>
+{% endblock %}

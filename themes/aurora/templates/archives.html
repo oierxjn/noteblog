@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+
+{% block title %}归档 - {{ config.title }}{% endblock %}
+
+{% block head %}
+<style>
+.archives-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.archives-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.archives-header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.archives-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: var(--card-background);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.archives-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.archives-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+}
+
+.year-section {
+    margin-bottom: 3rem;
+}
+
+.year-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.year-marker {
+    position: absolute;
+    left: -2.5rem;
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 50%;
+    border: 3px solid var(--background-color);
+    box-shadow: 0 0 0 3px var(--card-background);
+}
+
+.year-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.year-post-count {
+    margin-left: 1rem;
+    padding: 0.25rem 0.75rem;
+    background: var(--background-color);
+    border-radius: 15px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.month-section {
+    margin-bottom: 2rem;
+}
+
+.month-header {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    padding-left: 1rem;
+    border-left: 3px solid var(--primary-color);
+}
+
+.archive-posts {
+    display: grid;
+    gap: 1rem;
+}
+
+.archive-post {
+    background: var(--card-background);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.archive-post::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.archive-post:hover {
+    transform: translateX(4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.archive-post:hover::before {
+    transform: scaleY(1);
+}
+
+.archive-post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.archive-post-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    flex: 1;
+    margin-right: 1rem;
+}
+
+.archive-post-title:hover {
+    color: var(--primary-color);
+}
+
+.archive-post-date {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.archive-post-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.archive-post-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.archive-post-category:hover {
+    color: var(--secondary-color);
+}
+
+.archive-post-tags {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.archive-tag {
+    padding: 0.25rem 0.5rem;
+    background: var(--background-color);
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.archive-tag:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.archive-post-summary {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.empty-archives {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+}
+
+.empty-archives-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+    .archives-header h1 {
+        font-size: 2rem;
+    }
+    
+    .archives-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .archives-timeline {
+        padding-left: 1.5rem;
+    }
+    
+    .year-marker {
+        left: -2rem;
+    }
+    
+    .year-title {
+        font-size: 1.5rem;
+    }
+    
+    .archive-post-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .archive-post-date {
+        margin-top: 0.5rem;
+    }
+    
+    .archive-post-meta {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="archives-header">
+        <h1>文章归档</h1>
+        <p>按时间浏览所有文章</p>
+    </div>
+    
+    {% if archives %}
+    <div class="archives-stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_posts }}</div>
+            <div class="stat-label">总文章数</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ total_categories }}</div>
+            <div class="stat-label">分类数量</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ total_tags }}</div>
+            <div class="stat-label">标签数量</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ total_words }}</div>
+            <div class="stat-label">总字数</div>
+        </div>
+    </div>
+    
+    <div class="archives-timeline">
+        {% for year, posts in archives|dictsort(true) %}
+        <div class="year-section">
+            <div class="year-header">
+                <div class="year-marker"></div>
+                <h2 class="year-title">{{ year }}</h2>
+                <span class="year-post-count">{{ posts|length }} 篇文章</span>
+            </div>
+            
+            <div class="archive-posts">
+                {% for post in posts %}
+                <article class="archive-post">
+                    <div class="archive-post-header">
+                        <a href="{{ url_for('main.post', slug=post.slug) }}" class="archive-post-title">
+                            {{ post.title }}
+                        </a>
+                        <time class="archive-post-date" datetime="{{ post.created_at }}">
+                            {{ post.created_at.strftime('%m-%d') }}
+                        </time>
+                    </div>
+                    
+                    <div class="archive-post-meta">
+                        {% if post.category %}
+                        <a href="{{ url_for('main.category', slug=post.category.slug) }}" class="archive-post-category">
+                            <span>📁</span>
+                            <span>{{ post.category.name }}</span>
+                        </a>
+                        {% endif %}
+                        
+                        {% if post.tags %}
+                        <div class="archive-post-tags">
+                            {% for tag in post.tags[:3] %}
+                            <a href="{{ url_for('main.tag', slug=tag.slug) }}" class="archive-tag">
+                                {{ tag.name }}
+                            </a>
+                            {% endfor %}
+                            {% if post.tags|length > 3 %}
+                            <span class="archive-tag">+{{ post.tags|length - 3 }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if post.summary %}
+                    <p class="archive-post-summary">{{ post.summary }}</p>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-archives">
+        <div class="empty-archives-icon">📚</div>
+        <h2>暂无文章</h2>
+        <p>还没有发布任何文章</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 统计卡片动画
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 150);
+    });
+    
+    // 时间线动画
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateX(0)';
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+    
+    document.querySelectorAll('.archive-post').forEach((post, index) => {
+        post.style.opacity = '0';
+        post.style.transform = 'translateX(-20px)';
+        post.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        
+        setTimeout(() => {
+            observer.observe(post);
+        }, index * 50);
+    });
+    
+    // 年份标记动画
+    const yearMarkers = document.querySelectorAll('.year-marker');
+    yearMarkers.forEach(marker => {
+        marker.style.transform = 'scale(0)';
+        marker.style.transition = 'transform 0.5s ease';
+        
+        setTimeout(() => {
+            marker.style.transform = 'scale(1)';
+        }, 500);
+    });
+});
+</script>
+{% endblock %}

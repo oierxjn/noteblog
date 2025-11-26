@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}页面未找到 - {{ config.title }}{% endblock %}
+
+{% block head %}
+<style>
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    padding: 2rem;
+}
+
+.error-code {
+    font-size: 8rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    line-height: 1;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.error-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.error-description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    max-width: 500px;
+    line-height: 1.6;
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 3rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background: var(--card-background);
+    color: var(--text-primary);
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.error-illustration {
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.error-illustration::before {
+    content: '🌌';
+    font-size: 6rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.1;
+    animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.error-suggestions {
+    background: var(--card-background);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    max-width: 600px;
+    width: 100%;
+}
+
+.suggestions-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+.suggestions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}
+
+.suggestions-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: color 0.3s ease;
+}
+
+.suggestions-list li:last-child {
+    border-bottom: none;
+}
+
+.suggestions-list li:hover {
+    color: var(--text-primary);
+}
+
+.suggestions-list a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.suggestions-list a:hover {
+    color: var(--secondary-color);
+}
+
+@media (max-width: 768px) {
+    .error-code {
+        font-size: 6rem;
+    }
+    
+    .error-title {
+        font-size: 1.5rem;
+    }
+    
+    .error-description {
+        font-size: 1rem;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+    
+    .error-suggestions {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="error-container">
+        <div class="error-illustration">
+            <div class="error-code">404</div>
+        </div>
+        
+        <h1 class="error-title">页面未找到</h1>
+        <p class="error-description">
+            抱歉，您访问的页面不存在或已被移动。可能是链接错误、页面已删除，或者您输入了错误的地址。
+        </p>
+        
+        <div class="error-actions">
+            <a href="{{ url_for('main.index') }}" class="btn-primary">
+                <span>🏠</span>
+                <span>返回首页</span>
+            </a>
+            <a href="javascript:history.back()" class="btn-secondary">
+                <span>⬅️</span>
+                <span>返回上页</span>
+            </a>
+        </div>
+        
+        <div class="error-suggestions">
+            <h3 class="suggestions-title">您可以尝试：</h3>
+            <ul class="suggestions-list">
+                <li>
+                    <span>🔍</span>
+                    <span>使用搜索功能查找您需要的内容</span>
+                </li>
+                <li>
+                    <span>📂</span>
+                    <span>浏览<a href="{{ url_for('main.categories') }}">文章分类</a>发现感兴趣的内容</span>
+                </li>
+                <li>
+                    <span>🏷️</span>
+                    <span>查看<a href="{{ url_for('main.tags') }}">标签云</a>探索相关文章</span>
+                </li>
+                <li>
+                    <span>📚</span>
+                    <span>访问<a href="{{ url_for('main.archives') }}">文章归档</a>按时间浏览</span>
+                </li>
+                <li>
+                    <span>📧</span>
+                    <span>如果问题持续存在，请联系网站管理员</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 添加一些交互效果
+    const errorCode = document.querySelector('.error-code');
+    
+    // 鼠标移动时的视差效果
+    document.addEventListener('mousemove', (e) => {
+        const x = (e.clientX - window.innerWidth / 2) / 50;
+        const y = (e.clientY - window.innerHeight / 2) / 50;
+        
+        if (errorCode) {
+            errorCode.style.transform = `translate(${x}px, ${y}px)`;
+        }
+    });
+    
+    // 搜索建议功能
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+        searchInput.focus();
+    }
+    
+    // 记录404错误（可选）
+    if (typeof gtag !== 'undefined') {
+        gtag('event', '404', {
+            'event_category': 'error',
+            'event_label': window.location.pathname
+        });
+    }
+});
+</script>
+{% endblock %}

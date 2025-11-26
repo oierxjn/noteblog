@@ -4,6 +4,7 @@
 import os
 import json
 from typing import Dict, List, Any, Optional
+from sqlalchemy.orm import object_session
 from flask import current_app, render_template_string
 from app import db
 from app.models.theme import Theme, ThemeHook
@@ -13,8 +14,25 @@ class ThemeManager:
     
     def __init__(self):
         self.app = None
-        self.current_theme = None
+        self._current_theme = None
+        self._current_theme_id = None
         self.theme_hooks = {}
+
+    @property
+    def current_theme(self) -> Optional[Theme]:
+        """Return the active Theme instance, re-attaching it when needed."""
+        if self._current_theme is not None:
+            if object_session(self._current_theme) is not None:
+                return self._current_theme
+        if self._current_theme_id is not None:
+            # Always fetch a fresh instance bound to the current session.
+            self._current_theme = Theme.query.get(self._current_theme_id)
+        return self._current_theme
+
+    @current_theme.setter
+    def current_theme(self, theme: Optional[Theme]):
+        self._current_theme = theme
+        self._current_theme_id = theme.id if theme else None
         
     def init_app(self, app):
         """初始化应用"""
@@ -235,6 +253,15 @@ class ThemeManager:
         
         template_path = os.path.join(self.current_theme.install_path, 'templates', template_name)
         
+        # 如果当前主题没有该模板，尝试回退到default主题
+        if not os.path.exists(template_path):
+            default_theme = Theme.query.filter_by(name='default').first()
+            if default_theme and default_theme.name != self.current_theme.name:
+                default_template_path = os.path.join(default_theme.install_path, 'templates', template_name)
+                if os.path.exists(default_template_path):
+                    template_path = default_template_path
+                    current_app.logger.info(f"主题 {self.current_theme.name} 缺少模板 {template_name}，回退到default主题")
+        
         # 在渲染前补充常用上下文变量，避免主题模板因缺少变量而报错
         try:
             from app.models.post import Post, Category, Tag
@@ -296,7 +323,17 @@ class ThemeManager:
             # 使用 Jinja2 渲染模板
             from jinja2 import Environment, FileSystemLoader
             
-            template_dir = os.path.join(self.current_theme.install_path, 'templates')
+            # 确定模板目录 - 如果回退到default主题，使用default主题的目录
+            if template_path.startswith(os.path.join(self.current_theme.install_path, 'templates')):
+                template_dir = os.path.join(self.current_theme.install_path, 'templates')
+            else:
+                # 回退到default主题，使用default主题的模板目录
+                default_theme = Theme.query.filter_by(name='default').first()
+                if default_theme:
+                    template_dir = os.path.join(default_theme.install_path, 'templates')
+                else:
+                    template_dir = os.path.join(self.current_theme.install_path, 'templates')
+            
             env = Environment(loader=FileSystemLoader(template_dir))
             
             # 添加全局函数和常用 Flask 上下文（使主题模板能访问 flash/messages/request/session/g 等）

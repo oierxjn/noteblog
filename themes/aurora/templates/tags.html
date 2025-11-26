@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}标签 - {{ config.title }}{% endblock %}
+
+{% block head %}
+<style>
+.tags-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.tags-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.tags-header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.tags-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 3rem;
+}
+
+.tag-cloud-item {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 25px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.tag-cloud-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.tag-cloud-item:hover::before {
+    left: 100%;
+}
+
+.tag-cloud-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.tag-size-small {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.tag-size-medium {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.tag-size-large {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.tag-size-xlarge {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.tag-count {
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--background-color);
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.tags-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.tag-card {
+    background: var(--card-background);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.tag-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.tag-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.tag-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.tag-posts-count {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.tag-posts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tag-post {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tag-post:hover {
+    color: var(--primary-color);
+}
+
+.empty-tags {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+}
+
+.empty-tags-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.view-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.toggle-btn {
+    padding: 0.5rem 1rem;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toggle-btn.active {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-color: transparent;
+}
+
+.toggle-btn:hover:not(.active) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .tags-header h1 {
+        font-size: 2rem;
+    }
+    
+    .tags-cloud {
+        gap: 0.75rem;
+    }
+    
+    .tag-cloud-item {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .tags-list {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="tags-header">
+        <h1>文章标签</h1>
+        <p>按标签发现感兴趣的内容</p>
+    </div>
+    
+    {% if tags %}
+    <div class="view-toggle">
+        <button class="toggle-btn active" onclick="showView('cloud')">标签云</button>
+        <button class="toggle-btn" onclick="showView('list')">列表视图</button>
+    </div>
+    
+    <div id="cloud-view" class="tags-cloud">
+        {% for tag in tags %}
+        <a href="{{ url_for('main.tag', slug=tag.slug) }}" class="tag-cloud-item {{ get_tag_size(tag.post_count) }}">
+            <span>{{ tag.name }}</span>
+            <span class="tag-count">{{ tag.post_count }}</span>
+        </a>
+        {% endfor %}
+    </div>
+    
+    <div id="list-view" class="tags-list" style="display: none;">
+        {% for tag in tags %}
+        <div class="tag-card">
+            <div class="tag-card-header">
+                <h3 class="tag-name">{{ tag.name }}</h3>
+                <span class="tag-posts-count">{{ tag.post_count }}</span>
+            </div>
+            {% if tag.recent_posts %}
+            <div class="tag-posts">
+                {% for post in tag.recent_posts[:3] %}
+                <a href="{{ url_for('main.post', slug=post.slug) }}" class="tag-post" title="{{ post.title }}">
+                    {{ post.title }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-tags">
+        <div class="empty-tags-icon">🏷️</div>
+        <h2>暂无标签</h2>
+        <p>还没有创建任何文章标签</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showView(viewType) {
+    const cloudView = document.getElementById('cloud-view');
+    const listView = document.getElementById('list-view');
+    const toggleBtns = document.querySelectorAll('.toggle-btn');
+    
+    toggleBtns.forEach(btn => btn.classList.remove('active'));
+    
+    if (viewType === 'cloud') {
+        cloudView.style.display = 'flex';
+        listView.style.display = 'none';
+        toggleBtns[0].classList.add('active');
+    } else {
+        cloudView.style.display = 'none';
+        listView.style.display = 'grid';
+        toggleBtns[1].classList.add('active');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 标签云动画
+    const tagItems = document.querySelectorAll('.tag-cloud-item');
+    tagItems.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'scale(0.8)';
+        item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        
+        setTimeout(() => {
+            item.style.opacity = '1';
+            item.style.transform = 'scale(1)';
+        }, index * 50);
+    });
+    
+    // 列表视图动画
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+    
+    document.querySelectorAll('.tag-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

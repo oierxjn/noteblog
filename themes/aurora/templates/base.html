@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_title or 'Noteblog' }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}{{ site_description or '' }}{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}{{ site_keywords or '' }}{% endblock %}">
+    
+    <!-- Favicon -->
+    {% if get_theme_config().site_favicon %}
+    <link rel="icon" href="{{ get_theme_config().site_favicon }}">
+    {% endif %}
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/themes/aurora/static/css/aurora.css">
+    <link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    
+    <!-- 主题色变量 -->
+    <style>
+        :root {
+            --primary-color: {{ get_theme_config().primary_color or '#667eea' }};
+            --secondary-color: {{ get_theme_config().secondary_color or '#764ba2' }};
+            --accent-color: {{ get_theme_config().accent_color or '#f093fb' }};
+        }
+    </style>
+    
+    {% block head %}{% endblock %}
+    
+    <!-- 插件资源钩子：头部CSS -->
+    {% if plugin_hooks and plugin_hooks.head_assets %}
+        {% for asset_content in plugin_hooks.head_assets %}
+            {{ asset_content|safe }}
+        {% endfor %}
+    {% endif %}
+</head>
+<body>
+    <div id="app">
+        <!-- 头部 -->
+        <header class="site-header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="site-branding">
+                        {% if get_theme_config().site_logo %}
+                        <img src="{{ get_theme_config().site_logo }}" alt="{{ site_title }}" class="site-logo">
+                        {% endif %}
+                        <div>
+                            <h1 class="site-title">
+                                <a href="/">{{ site_title or 'Noteblog' }}</a>
+                            </h1>
+                            {% if site_description %}
+                            <p class="site-description">{{ site_description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <nav class="main-navigation">
+                        <div class="aurora-nav">
+                            <a href="/" class="aurora-nav-item {% if request.path == '/' %}active{% endif %}">
+                                <span>首页</span>
+                            </a>
+                            <a href="/archives" class="aurora-nav-item {% if request.path == '/archives' %}active{% endif %}">
+                                <span>归档</span>
+                            </a>
+                            <a href="/categories" class="aurora-nav-item {% if request.path == '/categories' %}active{% endif %}">
+                                <span>分类</span>
+                            </a>
+                            <a href="/tags" class="aurora-nav-item {% if request.path == '/tags' %}active{% endif %}">
+                                <span>标签</span>
+                            </a>
+                            <a href="/search" class="aurora-nav-item {% if request.path == '/search' %}active{% endif %}">
+                                <span>搜索</span>
+                            </a>
+                        </div>
+                    </nav>
+                    
+                    <div class="user-menu">
+                        <button class="mobile-nav-toggle" title="菜单">☰</button>
+                        {% if get_theme_config().enable_dark_mode != false %}
+                        <button class="theme-toggle" title="切换主题">🌙</button>
+                        {% endif %}
+                        
+                        {% if current_user.is_authenticated %}
+                        <div class="user-dropdown">
+                            <div class="user-avatar">
+                                {{ (current_user.display_name or current_user.username)[:1].upper() }}
+                            </div>
+                            <div class="user-menu-dropdown">
+                                <a href="/auth/profile">个人资料</a>
+                                <a href="/auth/edit">编辑资料</a>
+                                {% if current_user.is_admin %}
+                                <a href="/admin">管理后台</a>
+                                {% endif %}
+                                <a href="/auth/logout">退出登录</a>
+                            </div>
+                        </div>
+                        {% else %}
+                        <a href="/?modal=login" class="aurora-nav-item" data-modal-trigger="login">登录</a>
+                        <a href="/?modal=register" class="aurora-nav-item" data-modal-trigger="register">注册</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要内容 -->
+        <main class="site-main">
+            <div class="container">
+                <div class="content-wrapper {% if get_theme_config().show_sidebar == false or _admin_page %}no-sidebar{% endif %}">
+                    <!-- 主内容区 -->
+                    <div class="main-content">
+                        {% block content %}{% endblock %}
+                    </div>
+                    
+                    <!-- 侧边栏 -->
+                    {% if get_theme_config().show_sidebar != false and not _admin_page %}
+                    <aside class="sidebar">
+                        {% block sidebar %}
+                        <!-- 最新文章 -->
+                        <div class="widget">
+                            <h3 class="widget-title">最新文章</h3>
+                            <ul class="widget-list">
+                                {% for post in (recent_posts|default([]))[:5] %}
+                                <li>
+                                    <a href="/post/{{ post.slug }}">{{ post.title }}</a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                        <!-- 分类 -->
+                        <div class="widget">
+                            <h3 class="widget-title">分类</h3>
+                            <ul class="widget-list">
+                                {% for category in (categories|default([])) %}
+                                <li>
+                                    <a href="/category/{{ category.slug }}">{{ category.name }} ({{ category.post_count or 0 }})</a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                        <!-- 标签 -->
+                        <div class="widget">
+                            <h3 class="widget-title">标签</h3>
+                            <div class="tag-cloud">
+                                {% for tag in (tags|default([])) %}
+                                <a href="/tag/{{ tag.slug }}" class="tag-cloud-item">{{ tag.name }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- 插件钩子：侧边栏底部 -->
+                        {% if plugin_hooks and plugin_hooks.sidebar_bottom %}
+                            {% for hook_content in plugin_hooks.sidebar_bottom %}
+                                {{ hook_content|safe }}
+                            {% endfor %}
+                        {% endif %}
+                        {% endblock %}
+                    </aside>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="site-footer">
+            <div class="container">
+                <div class="footer-content">
+                    <p>{{ get_theme_config().footer_text or '© 2025 Noteblog. Crafted with Aurora Theme.' }}</p>
+                    <p>
+                        Powered by <a href="https://github.com/streetartist/noteblog">Noteblog</a> | 
+                        Theme Aurora
+                    </p>
+                </div>
+            </div>
+        </footer>
+
+        <!-- 返回顶部按钮 -->
+        <div class="back-to-top">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 15l-6-6-6 6"/>
+            </svg>
+        </div>
+        
+        <!-- 搜索模态框 -->
+        <div class="search-modal" aria-hidden="true" role="dialog" aria-modal="true">
+            <div class="search-modal-content" role="document">
+                <div class="search-modal-header">
+                    <h3>搜索文章</h3>
+                    <button class="search-close" type="button" aria-label="关闭搜索">&times;</button>
+                </div>
+                <form class="search-form" action="/search" method="GET">
+                    <input type="text" name="q" class="search-input" placeholder="输入关键词搜索..." autocomplete="off">
+                    <button type="submit">搜索</button>
+                </form>
+            </div>
+        </div>
+
+        {% if not current_user.is_authenticated %}
+        <!-- 登录模态框 -->
+        <div class="auth-modal" data-modal="login" aria-hidden="true" role="dialog" aria-modal="true">
+            <div class="auth-modal-content" role="document">
+                <div class="auth-modal-header">
+                    <h3>登录</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="关闭登录弹窗">&times;</button>
+                </div>
+                <form class="modal-form" action="{{ url_for('auth.login') }}" method="POST">
+                    <div class="form-field">
+                        <label for="login-username">用户名或邮箱</label>
+                        <input type="text" id="login-username" name="username" placeholder="请输入用户名或邮箱" required autocomplete="username">
+                    </div>
+                    <div class="form-field">
+                        <label for="login-password">密码</label>
+                        <input type="password" id="login-password" name="password" placeholder="请输入密码" required autocomplete="current-password">
+                    </div>
+                    <label class="form-checkbox-inline">
+                        <input type="checkbox" name="remember_me" value="on">
+                        <span>记住我</span>
+                    </label>
+                    <button type="submit" class="modal-submit">登录</button>
+                </form>
+                <div class="modal-footer-links">
+                    <button type="button" class="modal-link" data-modal-switch="forgot_password">忘记密码？</button>
+                    <button type="button" class="modal-link" data-modal-switch="register">还没有账户？注册</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 注册模态框 -->
+        <div class="auth-modal" data-modal="register" aria-hidden="true" role="dialog" aria-modal="true">
+            <div class="auth-modal-content" role="document">
+                <div class="auth-modal-header">
+                    <h3>注册</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="关闭注册弹窗">&times;</button>
+                </div>
+                <form class="modal-form" action="{{ url_for('auth.register') }}" method="POST">
+                    <div class="form-field">
+                        <label for="register-username">用户名</label>
+                        <input type="text" id="register-username" name="username" placeholder="请输入用户名" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="register-email">邮箱</label>
+                        <input type="email" id="register-email" name="email" placeholder="请输入邮箱" required autocomplete="email">
+                    </div>
+                    <div class="form-field">
+                        <label for="register-display">显示名称（可选）</label>
+                        <input type="text" id="register-display" name="display_name" placeholder="用于展示的昵称">
+                    </div>
+                    <div class="form-field">
+                        <label for="register-password">密码</label>
+                        <input type="password" id="register-password" name="password" placeholder="请输入密码" minlength="6" required autocomplete="new-password">
+                    </div>
+                    <div class="form-field">
+                        <label for="register-confirm">确认密码</label>
+                        <input type="password" id="register-confirm" name="confirm_password" placeholder="请再次输入密码" minlength="6" required autocomplete="new-password">
+                    </div>
+                    <button type="submit" class="modal-submit">注册</button>
+                </form>
+                <div class="modal-footer-links">
+                    <button type="button" class="modal-link" data-modal-switch="login">已有账户？登录</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 忘记密码模态框 -->
+        <div class="auth-modal" data-modal="forgot_password" aria-hidden="true" role="dialog" aria-modal="true">
+            <div class="auth-modal-content" role="document">
+                <div class="auth-modal-header">
+                    <h3>找回密码</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="关闭找回密码弹窗">&times;</button>
+                </div>
+                <form class="modal-form" action="{{ url_for('auth.forgot_password') }}" method="POST">
+                    <div class="form-field">
+                        <label for="forgot-email">邮箱地址</label>
+                        <input type="email" id="forgot-email" name="email" placeholder="请输入注册邮箱" required autocomplete="email">
+                    </div>
+                    <p class="modal-helper-text">我们会向该邮箱发送密码重置链接，请确保可以正常接收邮件。</p>
+                    <button type="submit" class="modal-submit">发送重置链接</button>
+                </form>
+                <div class="modal-footer-links">
+                    <button type="button" class="modal-link" data-modal-switch="login">返回登录</button>
+                    <button type="button" class="modal-link" data-modal-switch="register">需要新账户？立即注册</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/themes/aurora/static/js/aurora.js"></script>
+    <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    {% block scripts %}{% endblock %}
+    
+    <!-- 插件资源钩子：JavaScript -->
+    {% if plugin_hooks and plugin_hooks.scripts_assets %}
+        {% for asset_content in plugin_hooks.scripts_assets %}
+            {{ asset_content|safe }}
+        {% endfor %}
+    {% endif %}
+    
+    <!-- 统计代码 -->
+    {% if get_theme_config().analytics_code %}
+    {{ get_theme_config().analytics_code|safe }}
+    {% endif %}
+</body>
+</html>
