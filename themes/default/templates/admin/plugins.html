@@ -147,7 +147,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 },
                 configurePlugin(pluginName) {
-                    app.config.globalProperties.$message.info('插件配置功能开发中...');
+                    // 跳转到插件配置页面
+                    window.location.href = `/admin/plugins/${pluginName}/configure`;
                 },
                 uninstallPlugin(pluginName, displayName) {
                     app.config.globalProperties.$confirm(`确定要卸载插件 "${displayName}" 吗？此操作不可恢复。`, '确认卸载', {

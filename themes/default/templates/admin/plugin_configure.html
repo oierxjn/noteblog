@@ -1,0 +1,125 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="admin-plugin-configure">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <el-button type="text" onclick="window.location.href='/admin/plugins'" style="padding: 0;">
+                <i class="el-icon-arrow-left"></i> 返回插件管理
+            </el-button>
+            <h2 style="margin: 0; color: #303133;">{{ plugin.display_name or plugin.name }} - 配置管理</h2>
+        </div>
+        <div>
+            {% if plugin.is_active %}
+            <el-tag type="success">已激活</el-tag>
+            {% else %}
+            <el-tag type="warning">未激活</el-tag>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 插件信息卡片 -->
+    <el-card style="margin-bottom: 20px;">
+        <div slot="header">
+            <span>插件信息</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div>
+                <div style="color: #909399; font-size: 12px; margin-bottom: 4px;">插件名称</div>
+                <div style="color: #303133; font-weight: 500;">{{ plugin.display_name or plugin.name }}</div>
+            </div>
+            <div>
+                <div style="color: #909399; font-size: 12px; margin-bottom: 4px;">版本</div>
+                <div style="color: #303133; font-weight: 500;">{{ plugin.version or '1.0.0' }}</div>
+            </div>
+            <div>
+                <div style="color: #909399; font-size: 12px; margin-bottom: 4px;">作者</div>
+                <div style="color: #303133; font-weight: 500;">{{ plugin.author or '未知' }}</div>
+            </div>
+            <div>
+                <div style="color: #909399; font-size: 12px; margin-bottom: 4px;">描述</div>
+                <div style="color: #303133; font-weight: 500;">{{ plugin.description or '暂无描述' }}</div>
+            </div>
+        </div>
+    </el-card>
+
+    <!-- 插件管理内容 -->
+    <div id="plugin-admin-content">
+        <!-- 插件管理页面将在这里嵌入 -->
+        <div style="text-align: center; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <i class="el-icon-loading" style="font-size: 32px; color: #409eff; margin-bottom: 16px; display: block;"></i>
+            <p style="color: #606266; margin: 0;">正在加载插件管理页面...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// 通过原生 fetch 注入插件管理页
+document.addEventListener('DOMContentLoaded', function() {
+    const pluginName = '{{ plugin.name }}';
+    const contentDiv = document.getElementById('plugin-admin-content');
+
+    if (!contentDiv) {
+        console.error('找不到插件内容容器');
+        return;
+    }
+
+    const loadingMarkup = `
+        <div style="text-align: center; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <i class="el-icon-loading" style="font-size: 32px; color: #409eff; margin-bottom: 16px; display: block;"></i>
+            <p style="color: #606266; margin: 0;">正在加载插件管理页面...</p>
+        </div>
+    `;
+
+    const renderError = function(message) {
+        contentDiv.innerHTML = `
+            <div style="text-align: center; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <i class="el-icon-warning" style="font-size: 48px; color: #e6a23c; margin-bottom: 16px; display: block;"></i>
+                <h3 style="margin: 0 0 8px 0; color: #303133;">插件管理页面不可用</h3>
+                <p style="margin: 0 0 16px 0; color: #606266;">${message}</p>
+                <button type="button" class="el-button el-button--primary" onclick="window.location.href='/admin/plugins'">返回插件管理</button>
+            </div>
+        `;
+    };
+
+    const executeEmbeddedScripts = function(container) {
+        const scripts = container.querySelectorAll('script');
+        scripts.forEach(function(script) {
+            const newScript = document.createElement('script');
+            if (script.src) {
+                newScript.src = script.src;
+            } else {
+                newScript.textContent = script.textContent;
+            }
+            document.head.appendChild(newScript);
+            script.remove();
+        });
+    };
+
+    const loadPluginAdmin = function() {
+        contentDiv.innerHTML = loadingMarkup;
+
+        fetch(`/plugins/${pluginName}/admin`, { credentials: 'same-origin' })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('该插件可能没有提供管理页面，或者管理页面加载失败。');
+                }
+                return response.text();
+            })
+            .then(function(html) {
+                contentDiv.innerHTML = html;
+                executeEmbeddedScripts(contentDiv);
+            })
+            .catch(function(error) {
+                console.error('加载插件管理页面失败:', error);
+                renderError(error.message || '该插件可能没有提供管理页面，或者管理页面加载失败。');
+            });
+    };
+
+    loadPluginAdmin();
+});
+</script>
+{% endblock %}

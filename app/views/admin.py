@@ -670,6 +670,25 @@ def api_deactivate_plugin(plugin_name):
     else:
         return jsonify({'success': False, 'message': '插件停用失败'})
 
+@bp.route('/plugins/<plugin_name>/configure')
+@login_required
+@admin_required
+def configure_plugin(plugin_name):
+    """插件配置页面"""
+    # 获取插件信息
+    plugin = Plugin.query.filter_by(name=plugin_name).first()
+    if not plugin:
+        flash('插件不存在', 'error')
+        return redirect(url_for('admin.plugins'))
+    
+    context = {
+        'plugin': plugin,
+        'site_title': f"{plugin.display_name or plugin.name} 配置 - {SettingManager.get('site_title', 'Noteblog')} 管理后台",
+        'current_user': current_user
+    }
+    
+    return theme_manager.render_template('admin/plugin_configure.html', **context)
+
 # 主题管理
 @bp.route('/themes')
 @login_required
