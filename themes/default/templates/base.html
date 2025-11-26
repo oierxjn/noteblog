@@ -994,6 +994,194 @@
                 goToCreatePost() {
                     window.location.href = '/admin/posts/create';
                 },
+                createAndSubmitForm(action, fields = {}, method = 'POST') {
+                    if (!action) {
+                        return;
+                    }
+                    const form = document.createElement('form');
+                    form.method = method || 'POST';
+                    form.action = action;
+                    Object.entries(fields || {}).forEach(([name, value]) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = name;
+                        input.value = value;
+                        form.appendChild(input);
+                    });
+                    document.body.appendChild(form);
+                    form.submit();
+                },
+                // 管理后台插件页面方法
+                installPlugin() {
+                    if (typeof this.$prompt !== 'function') {
+                        console.warn('Element Plus prompt 未注册');
+                        return;
+                    }
+                    this.$prompt('请输入插件名称（插件文件夹名称）', '安装插件', {
+                        confirmButtonText: '安装',
+                        cancelButtonText: '取消',
+                        inputPattern: /^[a-zA-Z0-9_-]+$/,
+                        inputErrorMessage: '插件名称只能包含字母、数字、下划线和横线'
+                    }).then(({ value }) => {
+                        this.installPluginByName(value);
+                    }).catch(() => {
+                        if (this.$message?.info) {
+                            this.$message.info('已取消安装');
+                        }
+                    });
+                },
+                installPluginByName(pluginName) {
+                    const sanitizedName = (pluginName || '').trim();
+                    if (!sanitizedName) {
+                        if (this.$message?.warning) {
+                            this.$message.warning('插件名称不能为空');
+                        }
+                        return;
+                    }
+                    const validPattern = /^[a-zA-Z0-9_-]+$/;
+                    if (!validPattern.test(sanitizedName)) {
+                        if (this.$message?.error) {
+                            this.$message.error('插件名称只能包含字母、数字、下划线和横线');
+                        }
+                        return;
+                    }
+                    const loadingInstance = typeof this.$loading === 'function'
+                        ? this.$loading({
+                            lock: true,
+                            text: '正在安装插件...',
+                            spinner: 'el-icon-loading',
+                            background: 'rgba(0, 0, 0, 0.7)'
+                        })
+                        : null;
+                    this.createAndSubmitForm(`/admin/plugins/${sanitizedName}/install`);
+                    if (loadingInstance && typeof loadingInstance.close === 'function') {
+                        setTimeout(() => loadingInstance.close(), 2000);
+                    }
+                },
+                activatePlugin(pluginName) {
+                    if (!pluginName) {
+                        return;
+                    }
+                    this.createAndSubmitForm(`/admin/plugins/${pluginName}/activate`);
+                },
+                deactivatePlugin(pluginName) {
+                    if (!pluginName || typeof this.$confirm !== 'function') {
+                        return;
+                    }
+                    this.$confirm('确定要停用此插件吗？', '确认停用', {
+                        confirmButtonText: '确定停用',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        this.createAndSubmitForm(`/admin/plugins/${pluginName}/deactivate`);
+                    }).catch(() => {
+                        if (this.$message?.info) {
+                            this.$message.info('已取消停用');
+                        }
+                    });
+                },
+                configurePlugin(pluginName) {
+                    if (!pluginName) {
+                        return;
+                    }
+                    window.location.href = `/admin/plugins/${pluginName}/configure`;
+                },
+                uninstallPlugin(pluginName, displayName) {
+                    if (!pluginName || typeof this.$confirm !== 'function') {
+                        return;
+                    }
+                    const nameLabel = displayName || pluginName;
+                    this.$confirm(`确定要卸载插件 "${nameLabel}" 吗？此操作不可恢复。`, '确认卸载', {
+                        confirmButtonText: '确定卸载',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        if (this.$message?.info) {
+                            this.$message.info('卸载插件功能开发中...');
+                        }
+                    }).catch(() => {
+                        if (this.$message?.info) {
+                            this.$message.info('已取消卸载');
+                        }
+                    });
+                },
+                // 管理后台主题页面方法
+                installTheme() {
+                    if (this.$message?.info) {
+                        this.$message.info('安装主题功能开发中...');
+                    }
+                },
+                activateTheme(themeName) {
+                    if (!themeName) {
+                        return;
+                    }
+                    this.createAndSubmitForm(`/admin/themes/${themeName}/activate`);
+                },
+                customizeTheme(themeName) {
+                    if (this.$message?.info) {
+                        this.$message.info('主题自定义功能开发中...');
+                    }
+                },
+                previewTheme(themeName) {
+                    if (!themeName) {
+                        return;
+                    }
+                    window.open(`/?theme=${themeName}`, '_blank');
+                },
+                deleteTheme(themeName, displayName) {
+                    if (!themeName || typeof this.$confirm !== 'function') {
+                        return;
+                    }
+                    const nameLabel = displayName || themeName;
+                    this.$confirm(`确定要删除主题 "${nameLabel}" 吗？此操作不可恢复。`, '确认删除', {
+                        confirmButtonText: '确定删除',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        if (this.$message?.info) {
+                            this.$message.info('删除主题功能开发中...');
+                        }
+                    }).catch(() => {
+                        if (this.$message?.info) {
+                            this.$message.info('已取消删除');
+                        }
+                    });
+                },
+                // 系统设置页面方法
+                saveSettings() {
+                    const form = document.getElementById('settingsForm');
+                    if (form) {
+                        form.submit();
+                    }
+                },
+                resetSettings() {
+                    if (typeof this.$confirm !== 'function') {
+                        return;
+                    }
+                    this.$confirm('确定要重置所有设置吗？此操作不可恢复。', '确认重置', {
+                        confirmButtonText: '确定重置',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        if (this.$message?.info) {
+                            this.$message.info('重置设置功能开发中...');
+                        }
+                    }).catch(() => {
+                        if (this.$message?.info) {
+                            this.$message.info('已取消重置');
+                        }
+                    });
+                },
+                exportSettings() {
+                    if (this.$message?.info) {
+                        this.$message.info('导出设置功能开发中...');
+                    }
+                },
+                importSettings() {
+                    if (this.$message?.info) {
+                        this.$message.info('导入设置功能开发中...');
+                    }
+                },
                 setActiveMenu() {
                     const path = window.location.pathname;
                     if (path === '/' || path === '') {

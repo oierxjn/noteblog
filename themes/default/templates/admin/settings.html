@@ -155,34 +155,4 @@
 
 {% block scripts %}
 {{ super() }}
-<script>
-const { createApp } = Vue;
-const settingsApp = createApp({
-    methods: {
-        saveSettings() {
-            document.getElementById('settingsForm').submit();
-        },
-        resetSettings() {
-            this.$confirm('确定要重置所有设置吗？此操作不可恢复。', '确认重置', {
-                confirmButtonText: '确定重置',
-                cancelButtonText: '取消',
-                type: 'warning'
-            }).then(() => {
-                this.$message.info('重置设置功能开发中...');
-            }).catch(() => {
-                this.$message.info('已取消重置');
-            });
-        },
-        exportSettings() {
-            this.$message.info('导出设置功能开发中...');
-        },
-        importSettings() {
-            this.$message.info('导入设置功能开发中...');
-        }
-    }
-});
-
-settingsApp.use(ElementPlus);
-settingsApp.mount('.admin-settings');
-</script>
 {% endblock %}

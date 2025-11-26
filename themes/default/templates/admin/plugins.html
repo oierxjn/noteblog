@@ -6,7 +6,8 @@
         <h2 style="margin: 0; color: #303133;">插件管理</h2>
         <div>
             <el-button type="primary" @click="installPlugin">
-                <i class="el-icon-download"></i> 安装插件
+                <el-icon style="margin-right: 4px;"><Download /></el-icon>
+                安装插件
             </el-button>
         </div>
     </div>
@@ -21,7 +22,7 @@
             <div style="padding: 20px; border-bottom: 1px solid #f0f0f0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                     <div style="width: 48px; height: 48px; border-radius: 8px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;">
-                        <i class="el-icon-s-grid" style="font-size: 24px;"></i>
+                        <el-icon style="font-size: 24px;"><Grid /></el-icon>
                     </div>
                     <div style="flex: 1;">
                         <h3 style="margin: 0; font-size: 18px; font-weight: 600;">{{ plugin.name }}</h3>
@@ -49,13 +50,13 @@
                     <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
                         {% if plugin.author %}
                         <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #909399;">
-                            <i class="el-icon-user"></i>
+                            <el-icon><User /></el-icon>
                             <span>{{ plugin.author }}</span>
                         </div>
                         {% endif %}
                         {% if plugin.website %}
                         <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #909399;">
-                            <i class="el-icon-link"></i>
+                            <el-icon><Link /></el-icon>
                             <a href="{{ plugin.website }}" target="_blank" style="color: #409eff; text-decoration: none;">官网</a>
                         </div>
                         {% endif %}
@@ -67,29 +68,34 @@
                     {% if plugin.is_installed is defined and not plugin.is_installed %}
                     <!-- 未安装的插件 -->
                     <el-button size="small" type="primary" @click="installPluginByName('{{ plugin.name }}')" style="flex: 1;">
-                        <i class="el-icon-download"></i> 安装
+                        <el-icon style="margin-right: 4px;"><Download /></el-icon>
+                        安装
                     </el-button>
                     {% elif plugin.is_active %}
                     <!-- 已激活的插件 -->
                     <el-button size="small" type="warning" @click="deactivatePlugin('{{ plugin.name }}')" style="flex: 1;">
-                        <i class="el-icon-video-pause"></i> 停用
+                        <el-icon style="margin-right: 4px;"><Lock /></el-icon>
+                        停用
                     </el-button>
                     <el-button size="small" @click="configurePlugin('{{ plugin.name }}')" style="flex: 1;">
-                        <i class="el-icon-setting"></i> 配置
+                        <el-icon style="margin-right: 4px;"><Setting /></el-icon>
+                        配置
                     </el-button>
                     <el-button size="small" type="danger" @click="uninstallPlugin('{{ plugin.name }}', '{{ plugin.display_name or plugin.name }}')">
-                        <i class="el-icon-delete"></i>
+                        <el-icon><Delete /></el-icon>
                     </el-button>
                     {% else %}
                     <!-- 已安装但未激活的插件 -->
                     <el-button size="small" type="success" @click="activatePlugin('{{ plugin.name }}')" style="flex: 1;">
-                        <i class="el-icon-video-play"></i> 激活
+                        <el-icon style="margin-right: 4px;"><VideoPlay /></el-icon>
+                        激活
                     </el-button>
                     <el-button size="small" @click="configurePlugin('{{ plugin.name }}')" style="flex: 1;">
-                        <i class="el-icon-setting"></i> 配置
+                        <el-icon style="margin-right: 4px;"><Setting /></el-icon>
+                        配置
                     </el-button>
                     <el-button size="small" type="danger" @click="uninstallPlugin('{{ plugin.name }}', '{{ plugin.display_name or plugin.name }}')">
-                        <i class="el-icon-delete"></i>
+                        <el-icon><Delete /></el-icon>
                     </el-button>
                     {% endif %}
                 </div>
@@ -101,11 +107,12 @@
     <!-- 空状态 -->
     {% if not plugins %}
     <div style="text-align: center; padding: 60px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <i class="el-icon-s-grid" style="font-size: 64px; color: #c0c4cc; margin-bottom: 20px; display: block;"></i>
+        <el-icon style="font-size: 64px; color: #c0c4cc; margin-bottom: 20px; display: block;"><Grid /></el-icon>
         <h3 style="margin: 0 0 10px 0; color: #303133;">暂无插件</h3>
         <p style="margin: 0 0 20px 0; color: #909399;">安装插件来扩展博客功能</p>
         <el-button type="primary" @click="installPlugin">
-            <i class="el-icon-download"></i> 安装插件
+            <el-icon style="margin-right: 4px;"><Download /></el-icon>
+            安装插件
         </el-button>
     </div>
     {% endif %}
@@ -114,107 +121,4 @@
 
 {% block scripts %}
 {{ super() }}
-<script>
-(function attachAdminPluginHelpers() {
-    const ensureAppReady = (handler) => {
-        if (window._noteblog_app) {
-            handler(window._noteblog_app);
-            return;
-        }
-        setTimeout(() => ensureAppReady(handler), 50);
-    };
-
-    const registerHandlers = (app) => {
-        if (!app || (app._instance && app._instance.data && app._instance.data.activatePlugin)) {
-            return;
-        }
-
-        const methods = {
-            activatePlugin(pluginName) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/admin/plugins/${pluginName}/activate`;
-                document.body.appendChild(form);
-                form.submit();
-            },
-            deactivatePlugin(pluginName) {
-                app.config.globalProperties.$confirm('确定要停用此插件吗？', '确认停用', {
-                    confirmButtonText: '确定停用',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/admin/plugins/${pluginName}/deactivate`;
-                    document.body.appendChild(form);
-                    form.submit();
-                }).catch(() => {
-                    app.config.globalProperties.$message.info('已取消停用');
-                });
-            },
-            configurePlugin(pluginName) {
-                window.location.href = `/admin/plugins/${pluginName}/configure`;
-            },
-            uninstallPlugin(pluginName, displayName) {
-                app.config.globalProperties.$confirm(`确定要卸载插件 "${displayName}" 吗？此操作不可恢复。`, '确认卸载', {
-                    confirmButtonText: '确定卸载',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    app.config.globalProperties.$message.info('卸载插件功能开发中...');
-                }).catch(() => {
-                    app.config.globalProperties.$message.info('已取消卸载');
-                });
-            },
-            installPlugin() {
-                app.config.globalProperties.$prompt('请输入插件名称（插件文件夹名称）', '安装插件', {
-                    confirmButtonText: '安装',
-                    cancelButtonText: '取消',
-                    inputPattern: /^[a-zA-Z0-9_-]+$/,
-                    inputErrorMessage: '插件名称只能包含字母、数字、下划线和横线'
-                }).then(({ value }) => {
-                    methods.installPluginByName(value);
-                }).catch(() => {
-                    app.config.globalProperties.$message.info('已取消安装');
-                });
-            },
-            installPluginByName(pluginName) {
-                const loading = app.config.globalProperties.$loading({
-                    lock: true,
-                    text: '正在安装插件...',
-                    spinner: 'el-icon-loading',
-                    background: 'rgba(0, 0, 0, 0.7)'
-                });
-
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/admin/plugins/${pluginName}/install`;
-                document.body.appendChild(form);
-                form.submit();
-
-                setTimeout(() => {
-                    loading.close();
-                }, 2000);
-            }
-        };
-
-        app.config.globalProperties.$adminPlugins = methods;
-
-        if (app._instance && app._instance.data) {
-            app._instance.data.activatePlugin = methods.activatePlugin;
-            app._instance.data.deactivatePlugin = methods.deactivatePlugin;
-            app._instance.data.configurePlugin = methods.configurePlugin;
-            app._instance.data.uninstallPlugin = methods.uninstallPlugin;
-            app._instance.data.installPlugin = methods.installPlugin;
-            app._instance.data.installPluginByName = methods.installPluginByName;
-        }
-    };
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => ensureAppReady(registerHandlers));
-    } else {
-        ensureAppReady(registerHandlers);
-    }
-})();
-</script>
 {% endblock %}
