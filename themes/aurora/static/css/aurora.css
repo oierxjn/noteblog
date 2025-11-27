@@ -1714,7 +1714,8 @@ body.modal-open {
 
 .comment-actions {
     display: flex;
-    gap: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
 }
 
 .reply-btn,
@@ -1733,6 +1734,43 @@ body.modal-open {
 .edit-comment-btn:hover {
     background: var(--gradient-soft);
     color: var(--primary-color);
+}
+
+.comment-like-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--border-radius-lg);
+    transition: all var(--transition-fast);
+}
+
+.comment-like-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.comment-like-count {
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 1.5rem;
+    text-align: center;
+}
+
+.comment-like-btn.liked {
+    background: var(--gradient-soft);
+    border-color: transparent;
+    color: var(--primary-color);
+}
+
+.comment-like-btn.like-processing {
+    opacity: 0.6;
+    pointer-events: none;
 }
 
 .comment-replies {

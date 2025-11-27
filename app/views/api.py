@@ -397,6 +397,54 @@ def api_create_comment():
         status=201
     )
 
+@bp.route('/comments/<int:comment_id>/like', methods=['POST'])
+def api_toggle_comment_like(comment_id):
+    """给评论点赞或取消点赞（基于 session 的轻量实现）"""
+    comment = Comment.query.get_or_404(comment_id)
+
+    if not comment.is_approved:
+        return api_response(message='评论未公开，无法点赞', status=403)
+
+    payload = request.get_json(silent=True) or {}
+    action = (payload.get('action') or 'toggle').lower()
+
+    liked_comments = set(session.get('liked_comments', []))
+    has_liked = comment_id in liked_comments
+
+    if action == 'like' and has_liked:
+        return api_response(
+            data={'like_count': comment.like_count, 'liked': True},
+            message='已经赞过这条评论啦'
+        )
+    if action == 'unlike' and not has_liked:
+        return api_response(
+            data={'like_count': comment.like_count, 'liked': False},
+            message='尚未给这条评论点赞'
+        )
+
+    should_like = action == 'like' or (action == 'toggle' and not has_liked)
+
+    if should_like:
+        comment.like_count = (comment.like_count or 0) + 1
+        liked_comments.add(comment_id)
+        liked = True
+        message = '感谢点赞评论'
+    else:
+        comment.like_count = max(0, (comment.like_count or 0) - 1)
+        liked_comments.discard(comment_id)
+        liked = False
+        message = '已取消对评论的点赞'
+
+    db.session.commit()
+
+    session['liked_comments'] = list(liked_comments)
+    session.modified = True
+
+    return api_response(
+        data={'like_count': comment.like_count, 'liked': liked},
+        message=message
+    )
+
 @bp.route('/comments/<int:comment_id>', methods=['PUT'])
 @login_required
 def api_update_comment(comment_id):

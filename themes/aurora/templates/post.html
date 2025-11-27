@@ -164,6 +164,7 @@
 <!-- 评论区 -->
 <section class="comments-section">
     <h3 class="comments-title">评论 ({{ total_comments }})</h3>
+    {% set liked_comments = session.get('liked_comments', []) if session is defined else [] %}
     
     {% if post.comment_status == 'open' %}
     {% if plugin_hooks and plugin_hooks.comment_form_top %}
@@ -235,6 +236,7 @@
                     {{ comment.get_content_html()|safe }}
                 </div>
                 
+                {% set has_liked_comment = comment.id in liked_comments %}
                 <div class="comment-actions">
                     {% if post.comment_status == 'open' %}
                     <button class="reply-btn" data-comment-id="{{ comment.id }}" data-author-name="{{ display_name|e }}">
@@ -246,6 +248,17 @@
                         编辑
                     </button>
                     {% endif %}
+                    <button
+                        type="button"
+                        class="comment-like-btn{% if has_liked_comment %} liked{% endif %}"
+                        data-comment-id="{{ comment.id }}"
+                        data-liked="{{ 'true' if has_liked_comment else 'false' }}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                        <span class="comment-like-label">赞</span>
+                        <span class="comment-like-count">{{ comment.like_count or 0 }}</span>
+                    </button>
                 </div>
                 
                 {% set replies = comment.get_replies() %}
@@ -275,6 +288,30 @@
                             <div class="comment-text">
                                 {% if display_name %}<span class="reply-to">@{{ display_name }}:</span>{% endif %}
                                 {{ reply.get_content_html()|safe }}
+                            </div>
+                            {% set has_liked_reply = reply.id in liked_comments %}
+                            <div class="comment-actions">
+                                {% if post.comment_status == 'open' %}
+                                <button class="reply-btn" data-comment-id="{{ reply.id }}" data-author-name="{{ reply_name|e }}">
+                                    回复
+                                </button>
+                                {% endif %}
+                                {% if current_user and (current_user.id == reply.author_id or current_user.is_admin) %}
+                                <button class="edit-comment-btn" data-comment-id="{{ reply.id }}" data-comment-text="{{ reply.content|e }}">
+                                    编辑
+                                </button>
+                                {% endif %}
+                                <button
+                                    type="button"
+                                    class="comment-like-btn{% if has_liked_reply %} liked{% endif %}"
+                                    data-comment-id="{{ reply.id }}"
+                                    data-liked="{{ 'true' if has_liked_reply else 'false' }}">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="comment-like-label">赞</span>
+                                    <span class="comment-like-count">{{ reply.like_count or 0 }}</span>
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -7,6 +7,7 @@ class AuroraTheme {
         window.addEventListener('aurora:content-updated', () => {
             this.initCommentReply();
             this.initCommentEdit();
+            this.initCommentLikes();
         });
     }
 
@@ -334,6 +335,7 @@ class AuroraTheme {
         this.initCommentForm();
         this.initCommentReply();
         this.initCommentEdit();
+        this.initCommentLikes();
     }
 
     initCommentForm() {
@@ -446,6 +448,73 @@ class AuroraTheme {
                 clearReplyState();
             });
         }
+    }
+
+    initCommentLikes() {
+        const likeButtons = document.querySelectorAll('.comment-like-btn[data-comment-id]');
+        if (!likeButtons.length) {
+            return;
+        }
+
+        likeButtons.forEach(button => {
+            if (button.dataset.likeBound === 'true') {
+                return;
+            }
+            button.dataset.likeBound = 'true';
+
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                const commentId = button.dataset.commentId;
+                if (!commentId || button.dataset.likeProcessing === 'true') {
+                    return;
+                }
+
+                const currentlyLiked = button.dataset.liked === 'true';
+                const payload = { action: currentlyLiked ? 'unlike' : 'like' };
+
+                button.dataset.likeProcessing = 'true';
+                button.classList.add('like-processing');
+
+                fetch(`/api/comments/${commentId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.status !== 200) {
+                            throw new Error(result.message || '评论点赞失败');
+                        }
+
+                        const liked = Boolean(result.data && result.data.liked);
+                        const likeCount = result.data && typeof result.data.like_count === 'number'
+                            ? result.data.like_count
+                            : null;
+
+                        button.dataset.liked = liked ? 'true' : 'false';
+                        button.classList.toggle('liked', liked);
+
+                        if (likeCount !== null) {
+                            const counter = button.querySelector('.comment-like-count');
+                            if (counter) {
+                                counter.textContent = likeCount;
+                            }
+                        }
+
+                        this.showNotification(liked ? '已点赞评论' : '已取消评论点赞', liked ? 'success' : 'info');
+                    })
+                    .catch(error => {
+                        console.error('[AuroraTheme] 评论点赞失败', error);
+                        this.showNotification(error.message || '评论点赞失败，请稍后重试', 'error');
+                    })
+                    .finally(() => {
+                        button.dataset.likeProcessing = 'false';
+                        button.classList.remove('like-processing');
+                    });
+            });
+        });
     }
 
     initCommentEdit() {
