@@ -2,7 +2,7 @@
 API 视图
 """
 from datetime import datetime
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
 from app import db
 from app.models.user import User
@@ -207,6 +207,52 @@ def api_delete_post(post_id):
     plugin_manager.do_action('after_post_delete', post=post)
     
     return api_response(message='文章删除成功')
+
+@bp.route('/posts/<int:post_id>/like', methods=['POST'])
+def api_toggle_post_like(post_id):
+    """给文章点赞或取消点赞（基于 session 的轻量实现）"""
+    post = Post.query.get_or_404(post_id)
+
+    payload = request.get_json(silent=True) or {}
+    action = (payload.get('action') or 'toggle').lower()
+
+    liked_posts = set(session.get('liked_posts', []))
+    has_liked = post_id in liked_posts
+
+    # 处理显式动作，否则按 toggle 逻辑运行
+    if action == 'like' and has_liked:
+        return api_response(
+            data={'like_count': post.like_count, 'liked': True},
+            message='您已经点过赞啦'
+        )
+    if action == 'unlike' and not has_liked:
+        return api_response(
+            data={'like_count': post.like_count, 'liked': False},
+            message='尚未点赞'
+        )
+
+    should_like = action == 'like' or (action == 'toggle' and not has_liked)
+
+    if should_like:
+        post.like_count = (post.like_count or 0) + 1
+        liked_posts.add(post_id)
+        liked = True
+        message = '谢谢喜欢！'
+    else:
+        post.like_count = max(0, (post.like_count or 0) - 1)
+        liked_posts.discard(post_id)
+        liked = False
+        message = '已取消喜欢'
+
+    db.session.commit()
+
+    session['liked_posts'] = list(liked_posts)
+    session.modified = True
+
+    return api_response(
+        data={'like_count': post.like_count, 'liked': liked},
+        message=message
+    )
 
 # 分类 API
 @bp.route('/categories')

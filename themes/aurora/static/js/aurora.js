@@ -21,6 +21,7 @@ class AuroraTheme {
         this.initComments();
         this.initImageLazyLoad();
         this.initDarkMode();
+        this.initLikeButtons();
     }
 
     initThemeToggle() {
@@ -589,6 +590,73 @@ class AuroraTheme {
 
         const lazyImages = document.querySelectorAll('img[data-src]');
         lazyImages.forEach(img => imageObserver.observe(img));
+    }
+
+    initLikeButtons() {
+        const likeButtons = document.querySelectorAll('.like-btn[data-post-id]');
+        if (!likeButtons.length) {
+            return;
+        }
+
+        likeButtons.forEach(button => {
+            if (button.dataset.likeBound === 'true') {
+                return;
+            }
+            button.dataset.likeBound = 'true';
+
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                const postId = button.dataset.postId;
+                if (!postId || button.dataset.likeProcessing === 'true') {
+                    return;
+                }
+
+                button.dataset.likeProcessing = 'true';
+                button.classList.add('like-processing');
+
+                const currentlyLiked = button.dataset.liked === 'true';
+                const payload = { action: currentlyLiked ? 'unlike' : 'like' };
+
+                fetch(`/api/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.status !== 200) {
+                            throw new Error(result.message || '点赞失败');
+                        }
+
+                        const liked = Boolean(result.data && result.data.liked);
+                        const likeCount = result.data && typeof result.data.like_count === 'number'
+                            ? result.data.like_count
+                            : null;
+
+                        button.dataset.liked = liked ? 'true' : 'false';
+                        button.classList.toggle('liked', liked);
+
+                        if (likeCount !== null) {
+                            const counter = button.querySelector('.like-count');
+                            if (counter) {
+                                counter.textContent = likeCount;
+                            }
+                        }
+
+                        this.showNotification(liked ? '谢谢喜欢！' : '已取消喜欢', 'success');
+                    })
+                    .catch(error => {
+                        console.error('[AuroraTheme] 点赞请求失败', error);
+                        this.showNotification(error.message || '点赞失败，请稍后重试', 'error');
+                    })
+                    .finally(() => {
+                        button.dataset.likeProcessing = 'false';
+                        button.classList.remove('like-processing');
+                    });
+            });
+        });
     }
 
     // 深色模式增强
