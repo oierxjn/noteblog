@@ -4,6 +4,8 @@
 {% block description %}{{ post.excerpt or post.content[:150] }}{% endblock %}
 
 {% block content %}
+{% set liked_posts = session.get('liked_posts', []) if session is defined else [] %}
+{% set has_liked_post = post.id in liked_posts %}
 <div class="serenity-post-flow">
 <article class="serenity-article">
     <header class="article-header">
@@ -43,7 +45,14 @@
 
     <div class="article-actions">
         <button type="button" class="serenity-ghost-button" onclick="window.serenityTheme.copyLink(window.location.href)">复制链接</button>
-        <button type="button" class="serenity-solid-button" data-like-post data-post-id="{{ post.id }}">喜欢 · {{ post.like_count or 0 }}</button>
+        <button
+            type="button"
+            class="serenity-solid-button{% if has_liked_post %} liked{% endif %}"
+            data-like-post
+            data-post-id="{{ post.id }}"
+            data-liked="{{ 'true' if has_liked_post else 'false' }}">
+            喜欢 · <span data-like-count>{{ post.like_count or 0 }}</span>
+        </button>
     </div>
 
     {% if plugin_hooks and plugin_hooks.post_footer %}
@@ -150,7 +159,13 @@
                     {% if post.comment_status == 'open' %}
                     <button type="button" class="serenity-link comment-reply-btn" data-comment-id="{{ comment.id }}" data-author-name="{{ display_name|e }}">回复</button>
                     {% endif %}
-                    <button type="button" class="serenity-link comment-like-btn{% if has_liked_comment %} liked{% endif %}" data-comment-id="{{ comment.id }}">赞 · {{ comment.like_count or 0 }}</button>
+                    <button
+                        type="button"
+                        class="serenity-link comment-like-btn{% if has_liked_comment %} liked{% endif %}"
+                        data-comment-id="{{ comment.id }}"
+                        data-liked="{{ 'true' if has_liked_comment else 'false' }}">
+                        赞 · <span data-like-count>{{ comment.like_count or 0 }}</span>
+                    </button>
                 </div>
                 {% set replies = comment.get_replies() %}
                 {% if replies %}
@@ -158,6 +173,7 @@
                     {% for reply in replies %}
                     {% set reply_name = reply.get_display_name() %}
                     {% set reply_website = reply.get_display_website() %}
+                    {% set reply_has_liked = reply.id in (session.get('liked_comments', []) if session is defined else []) %}
                     <li class="comment-item" data-comment-id="{{ reply.id }}">
                         <div class="comment-avatar">
                             {% if reply.get_display_avatar() %}
@@ -182,7 +198,13 @@
                                 {% if post.comment_status == 'open' %}
                                 <button type="button" class="serenity-link comment-reply-btn" data-comment-id="{{ reply.id }}" data-author-name="{{ reply_name|e }}">回复</button>
                                 {% endif %}
-                                <button type="button" class="serenity-link comment-like-btn" data-comment-id="{{ reply.id }}">赞 · {{ reply.like_count or 0 }}</button>
+                                <button
+                                    type="button"
+                                    class="serenity-link comment-like-btn{% if reply_has_liked %} liked{% endif %}"
+                                    data-comment-id="{{ reply.id }}"
+                                    data-liked="{{ 'true' if reply_has_liked else 'false' }}">
+                                    赞 · <span data-like-count>{{ reply.like_count or 0 }}</span>
+                                </button>
                             </div>
                         </div>
                     </li>

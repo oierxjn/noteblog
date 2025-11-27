@@ -154,6 +154,12 @@ a {
     color: #fff;
 }
 
+.serenity-solid-button.liked {
+    background: rgba(248, 180, 0, 0.18);
+    color: var(--serenity-primary);
+    box-shadow: inset 0 0 0 1px rgba(248, 180, 0, 0.4);
+}
+
 .serenity-link {
     color: var(--serenity-primary);
     text-decoration: none;

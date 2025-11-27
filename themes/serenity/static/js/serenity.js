@@ -21,6 +21,7 @@ class SerenityTheme {
         this.initCommentForm();
         this.observeHeader();
         this.registerGlobalShortcuts();
+        this.initLikeInteractions();
     }
 
     restoreTheme() {
@@ -246,6 +247,129 @@ class SerenityTheme {
                 this.searchToggle?.click();
             }
         });
+    }
+
+    initLikeInteractions() {
+        this.bindPostLikeButton();
+        this.bindCommentLikeButtons(document);
+        window.addEventListener('serenity:content-updated', (event) => {
+            const root = event?.detail?.root;
+            this.bindCommentLikeButtons(root instanceof Element ? root : document);
+        });
+    }
+
+    bindPostLikeButton() {
+        const button = document.querySelector('[data-like-post][data-post-id]');
+        if (!button || button.dataset.likeBound) {
+            return;
+        }
+        button.dataset.likeBound = '1';
+
+        button.addEventListener('click', async () => {
+            const postId = Number(button.dataset.postId);
+            if (!postId || button.dataset.likeProcessing === '1') {
+                return;
+            }
+
+            button.dataset.likeProcessing = '1';
+            button.disabled = true;
+
+            const currentlyLiked = button.dataset.liked === 'true';
+            const payload = { action: currentlyLiked ? 'unlike' : 'like' };
+
+            try {
+                const result = await this.postJson(`/api/posts/${postId}/like`, payload);
+                this.applyPostLikeState(button, result?.data);
+                this.showToast(result?.message || (result?.data?.liked ? '谢谢喜欢！' : '已取消喜欢'));
+            } catch (error) {
+                console.error('[SerenityTheme] 点赞文章失败', error);
+                this.showToast(error.message || '点赞失败，请稍后重试', 'error');
+            } finally {
+                button.dataset.likeProcessing = '0';
+                button.disabled = false;
+            }
+        });
+    }
+
+    bindCommentLikeButtons(root = document) {
+        const scope = root && typeof root.querySelectorAll === 'function' ? root : document;
+        const buttons = scope.querySelectorAll?.('.comment-like-btn[data-comment-id]') || [];
+        buttons.forEach(button => {
+            if (button.dataset.likeBound) {
+                return;
+            }
+            button.dataset.likeBound = '1';
+
+            button.addEventListener('click', async () => {
+                const commentId = Number(button.dataset.commentId);
+                if (!commentId || button.dataset.likeProcessing === '1') {
+                    return;
+                }
+
+                button.dataset.likeProcessing = '1';
+                button.disabled = true;
+
+                const currentlyLiked = button.dataset.liked === 'true';
+                const payload = { action: currentlyLiked ? 'unlike' : 'like' };
+
+                try {
+                    const result = await this.postJson(`/api/comments/${commentId}/like`, payload);
+                    this.applyCommentLikeState(button, result?.data);
+                    this.showToast(result?.message || (result?.data?.liked ? '感谢点赞评论' : '已取消对评论的点赞'));
+                } catch (error) {
+                    console.error('[SerenityTheme] 点赞评论失败', error);
+                    this.showToast(error.message || '点赞评论失败，请稍后重试', 'error');
+                } finally {
+                    button.dataset.likeProcessing = '0';
+                    button.disabled = false;
+                }
+            });
+        });
+    }
+
+    applyPostLikeState(button, data = {}) {
+        const liked = Boolean(data?.liked);
+        button.dataset.liked = liked ? 'true' : 'false';
+        button.classList.toggle('liked', liked);
+        const likeCount = typeof data?.like_count === 'number' ? data.like_count : null;
+        if (likeCount !== null) {
+            const counter = button.querySelector('[data-like-count]');
+            if (counter) {
+                counter.textContent = likeCount;
+            } else {
+                button.textContent = `喜欢 · ${likeCount}`;
+            }
+        }
+    }
+
+    applyCommentLikeState(button, data = {}) {
+        const liked = Boolean(data?.liked);
+        button.dataset.liked = liked ? 'true' : 'false';
+        button.classList.toggle('liked', liked);
+        const likeCount = typeof data?.like_count === 'number' ? data.like_count : null;
+        if (likeCount !== null) {
+            const counter = button.querySelector('[data-like-count]');
+            if (counter) {
+                counter.textContent = likeCount;
+            } else {
+                button.textContent = `赞 · ${likeCount}`;
+            }
+        }
+    }
+
+    async postJson(url, payload) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload || {})
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || (data?.status && data.status >= 400)) {
+            const error = new Error(data?.message || '请求失败');
+            error.data = data;
+            throw error;
+        }
+        return data;
     }
 
     hydratePostPage() {
