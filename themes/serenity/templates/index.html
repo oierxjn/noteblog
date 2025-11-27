@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block hero %}
+<section class="serenity-hero">
+    <div class="serenity-container hero-inner">
+        <div>
+            <p class="hero-kicker">Serenity Theme</p>
+            <h1>{{ get_theme_config().hero_title or '写下日常，积累灵感' }}</h1>
+            <p class="hero-description">{{ get_theme_config().hero_subtitle or 'Serenity 将杂乱信息重新编排，帮助访客在舒适的排版中专注阅读。' }}</p>
+            <div class="hero-actions">
+                <a class="serenity-solid-button" href="{{ get_theme_config().hero_cta_link or '/archives' }}">
+                    {{ get_theme_config().hero_cta_text or '开始阅读' }}
+                </a>
+                <a class="serenity-ghost-button" href="/search">全文搜索</a>
+            </div>
+        </div>
+        <ul class="hero-metrics">
+            <li>
+                <span class="metric-label">文章</span>
+                <strong>{{ total_posts or posts.total if posts else 0 }}</strong>
+            </li>
+            <li>
+                <span class="metric-label">分类</span>
+                <strong>{{ total_categories or (categories|length if categories else 0) }}</strong>
+            </li>
+            <li>
+                <span class="metric-label">标签</span>
+                <strong>{{ total_tags or (tags|length if tags else 0) }}</strong>
+            </li>
+        </ul>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="posts-grid">
+    {% if posts and posts.items %}
+        {% for post in posts.items %}
+        <article class="post-card">
+            <header>
+                <div class="post-meta-line">
+                    <span>{{ post.published_at.strftime('%Y-%m-%d') if post.published_at else post.created_at.strftime('%Y-%m-%d') }}</span>
+                    {% if post.category %}
+                    <a href="/category/{{ post.category.slug }}" class="post-meta-link">{{ post.category.name }}</a>
+                    {% endif %}
+                </div>
+                <h2><a href="/post/{{ post.slug }}">{{ post.title }}</a></h2>
+            </header>
+            {% if post.featured_image %}
+            <div class="post-cover">
+                <img src="{{ post.featured_image }}" alt="{{ post.title }}" loading="lazy">
+            </div>
+            {% endif %}
+            {% if get_theme_config().show_excerpt != false %}
+            <div class="post-excerpt">{{ post.get_excerpt_html(140)|safe }}</div>
+            {% endif %}
+            {% if post.tags %}
+            <div class="post-tags">
+                {% for tag in post.tags[:4] %}
+                <a href="/tag/{{ tag.slug }}" class="tag-pill">{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <footer>
+                <a class="serenity-link" href="/post/{{ post.slug }}">阅读全文 →</a>
+                <div class="post-stats">
+                    <span>👁️ {{ post.view_count or 0 }}</span>
+                    {% if post.comment_count is defined %}
+                    <span>💬 {{ post.comment_count or 0 }}</span>
+                    {% endif %}
+                </div>
+            </footer>
+        </article>
+        {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <p>🗒️</p>
+        <h3>还没有文章</h3>
+        <p>在后台创建第一篇博文，Serenity 会自动排版。</p>
+    </div>
+    {% endif %}
+</section>
+
+{% if posts and posts.pages > 1 %}
+<nav class="serenity-pagination">
+    {% if posts.has_prev %}
+    <a href="{{ url_for('main.index', page=posts.prev_num) }}" class="pagination-btn">上一页</a>
+    {% endif %}
+    <span>第 {{ posts.page }} / {{ posts.pages }} 页</span>
+    {% if posts.has_next %}
+    <a href="{{ url_for('main.index', page=posts.next_num) }}" class="pagination-btn">下一页</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endblock %}

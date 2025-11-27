@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Serenity 时间线 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="timeline-page">
+    <header class="page-header">
+        <p class="page-kicker">Milestones</p>
+        <h1>Serenity 时间线</h1>
+        <p class="page-subtitle">记录你与读者共享的关键节点，可自由扩展为自定义页面。</p>
+    </header>
+    <div class="timeline-list">
+        <article>
+            <time>2025 · Q1</time>
+            <h3>Serenity 1.0 发布</h3>
+            <p>完成布局系统、暗黑模式与侧边栏可配置化。</p>
+        </article>
+        <article>
+            <time>2025 · Q2</time>
+            <h3>主题商店上架</h3>
+            <p>提交到 Noteblog 官方主题仓库，开放 issue 与贡献指南。</p>
+        </article>
+        <article>
+            <time>2025 · Q3</time>
+            <h3>性能迭代</h3>
+            <p>按需加载评论脚本，平均首屏渲染下降 18%。</p>
+        </article>
+    </div>
+</section>
+{% endblock %}

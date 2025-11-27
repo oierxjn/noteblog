@@ -1,0 +1,68 @@
+<div class="serenity-modal" data-modal="login" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true">
+        <header>
+            <h3>登录</h3>
+            <button type="button" class="serenity-icon-button" data-modal-close aria-label="关闭">×</button>
+        </header>
+        <form action="{{ url_for('auth.login') }}" method="POST">
+            <label>用户名或邮箱
+                <input type="text" name="username" autocomplete="username" required>
+            </label>
+            <label>密码
+                <input type="password" name="password" autocomplete="current-password" required>
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" name="remember_me" value="on"> 记住我
+            </label>
+            <button type="submit" class="serenity-solid-button">登录</button>
+            <button type="button" class="serenity-link" data-modal-switch="forgot_password">忘记密码？</button>
+        </form>
+    </div>
+</div>
+
+<div class="serenity-modal" data-modal="register" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true">
+        <header>
+            <h3>注册</h3>
+            <button type="button" class="serenity-icon-button" data-modal-close aria-label="关闭">×</button>
+        </header>
+        <form action="{{ url_for('auth.register') }}" method="POST">
+            <label>用户名
+                <input type="text" name="username" required>
+            </label>
+            <label>邮箱
+                <input type="email" name="email" autocomplete="email" required>
+            </label>
+            <label>显示名称（可选）
+                <input type="text" name="display_name">
+            </label>
+            <label>密码
+                <input type="password" name="password" minlength="6" autocomplete="new-password" required>
+            </label>
+            <label>确认密码
+                <input type="password" name="confirm_password" minlength="6" autocomplete="new-password" required>
+            </label>
+            <button type="submit" class="serenity-solid-button">注册</button>
+            <button type="button" class="serenity-link" data-modal-switch="login">已有账号？登录</button>
+        </form>
+    </div>
+</div>
+
+<div class="serenity-modal" data-modal="forgot_password" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true">
+        <header>
+            <h3>找回密码</h3>
+            <button type="button" class="serenity-icon-button" data-modal-close aria-label="关闭">×</button>
+        </header>
+        <form action="{{ url_for('auth.forgot_password') }}" method="POST">
+            <label>注册邮箱
+                <input type="email" name="email" autocomplete="email" required>
+            </label>
+            <p class="modal-helper">我们会向该邮箱发送一封重置密码邮件。</p>
+            <div class="modal-actions">
+                <button type="button" class="serenity-ghost-button" data-modal-switch="login">返回登录</button>
+                <button type="submit" class="serenity-solid-button">发送链接</button>
+            </div>
+        </form>
+    </div>
+</div>

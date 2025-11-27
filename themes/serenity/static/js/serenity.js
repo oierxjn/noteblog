@@ -1,0 +1,286 @@
+class SerenityTheme {
+    constructor() {
+        this.nav = document.querySelector('[data-nav]');
+        this.navToggle = document.querySelector('[data-nav-toggle]');
+        this.searchModal = document.querySelector('.serenity-search-modal');
+        this.searchToggle = document.querySelector('[data-search-toggle]');
+        this.searchClose = document.querySelector('[data-search-close]');
+        this.backToTop = document.querySelector('.serenity-back-to-top');
+        this.themeToggle = document.querySelector('.theme-toggle');
+        this.activeModal = null;
+        this.modalMap = {};
+        this.init();
+    }
+
+    init() {
+        this.restoreTheme();
+        this.initNav();
+        this.initSearch();
+        this.initModals();
+        this.initBackToTop();
+        this.initCommentForm();
+        this.observeHeader();
+        this.registerGlobalShortcuts();
+    }
+
+    restoreTheme() {
+        if (!this.themeToggle) {
+            return;
+        }
+        const saved = localStorage.getItem('serenity-theme');
+        const initial = saved || document.documentElement.getAttribute('data-theme') || 'light';
+        this.applyTheme(initial);
+        this.themeToggle.addEventListener('click', () => {
+            const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            this.applyTheme(next);
+            localStorage.setItem('serenity-theme', next);
+        });
+    }
+
+    applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        if (this.themeToggle) {
+            this.themeToggle.textContent = theme === 'dark' ? '🌙' : '☀️';
+        }
+    }
+
+    initNav() {
+        if (!this.nav || !this.navToggle) {
+            return;
+        }
+        this.navToggle.addEventListener('click', () => {
+            this.nav.classList.toggle('open');
+        });
+        this.nav.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                this.nav.classList.remove('open');
+            });
+        });
+        document.addEventListener('click', (event) => {
+            if (!this.nav.contains(event.target) && !this.navToggle.contains(event.target)) {
+                this.nav.classList.remove('open');
+            }
+        });
+    }
+
+    initSearch() {
+        if (!this.searchModal) {
+            return;
+        }
+        const toggleModal = (open) => {
+            this.searchModal.classList.toggle('active', open);
+            document.body.classList.toggle('serenity-backdrop-open', open);
+            const input = this.searchModal.querySelector('input');
+            if (open && input) {
+                setTimeout(() => input.focus(), 60);
+            }
+        };
+        this.searchToggle?.addEventListener('click', () => toggleModal(true));
+        this.searchClose?.addEventListener('click', () => toggleModal(false));
+        this.searchModal.addEventListener('click', (event) => {
+            if (event.target === this.searchModal) {
+                toggleModal(false);
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                toggleModal(false);
+            }
+        });
+    }
+
+    initModals() {
+        document.querySelectorAll('.serenity-modal').forEach(modal => {
+            const key = modal.dataset.modal;
+            if (key) {
+                this.modalMap[key] = modal;
+            }
+        });
+        const toggleBodyLock = () => {
+            const active = Object.values(this.modalMap).some(modal => modal.classList.contains('active'));
+            document.body.classList.toggle('serenity-backdrop-open', active);
+        };
+        const openModal = (name) => {
+            const modal = this.modalMap[name];
+            if (!modal) return;
+            Object.values(this.modalMap).forEach(item => item.classList.remove('active'));
+            modal.classList.add('active');
+            this.activeModal = name;
+            toggleBodyLock();
+            const firstField = modal.querySelector('input, textarea, button');
+            if (firstField) {
+                setTimeout(() => firstField.focus(), 80);
+            }
+        };
+        const closeAll = () => {
+            Object.values(this.modalMap).forEach(item => item.classList.remove('active'));
+            this.activeModal = null;
+            toggleBodyLock();
+        };
+        document.querySelectorAll('[data-modal-trigger]').forEach(btn => {
+            btn.addEventListener('click', (event) => {
+                event.preventDefault();
+                openModal(btn.dataset.modalTrigger);
+            });
+        });
+        document.querySelectorAll('[data-modal-close]').forEach(btn => {
+            btn.addEventListener('click', closeAll);
+        });
+        document.querySelectorAll('[data-modal-switch]').forEach(btn => {
+            btn.addEventListener('click', (event) => {
+                event.preventDefault();
+                openModal(btn.dataset.modalSwitch);
+            });
+        });
+        Object.values(this.modalMap).forEach(modal => {
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    closeAll();
+                }
+            });
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && this.activeModal) {
+                closeAll();
+            }
+        });
+    }
+
+    initBackToTop() {
+        if (!this.backToTop) return;
+        const update = () => {
+            if (window.scrollY > 360) {
+                this.backToTop.classList.add('visible');
+            } else {
+                this.backToTop.classList.remove('visible');
+            }
+        };
+        this.backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        window.addEventListener('scroll', update, { passive: true });
+        update();
+    }
+
+    initCommentForm() {
+        const form = document.querySelector('.comment-form');
+        if (!form) return;
+        const cancelBtn = form.querySelector('[data-cancel-reply]');
+        const parentInput = form.querySelector('input[name="parent_id"]');
+        const resetReply = () => {
+            if (parentInput) {
+                parentInput.value = '';
+            }
+            cancelBtn?.setAttribute('hidden', 'hidden');
+        };
+
+        const bindReplyButtons = () => {
+            document.querySelectorAll('.comment-reply-btn').forEach(btn => {
+                if (btn.dataset.serenityBound) return;
+                btn.dataset.serenityBound = '1';
+                btn.addEventListener('click', () => {
+                    if (!parentInput) return;
+                    parentInput.value = btn.dataset.commentId;
+                    cancelBtn?.removeAttribute('hidden');
+                    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const textarea = form.querySelector('textarea');
+                    textarea?.focus();
+                });
+            });
+        };
+
+        bindReplyButtons();
+        window.addEventListener('serenity:content-updated', bindReplyButtons);
+
+        cancelBtn?.addEventListener('click', resetReply);
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const submit = form.querySelector('button[type="submit"]');
+            submit.disabled = true;
+            submit.textContent = '提交中...';
+            const payload = Object.fromEntries(new FormData(form).entries());
+            fetch('/api/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(async (res) => {
+                    if (!res.ok) {
+                        const error = await res.json().catch(() => ({}));
+                        throw new Error(error.message || '提交失败');
+                    }
+                    return res.json();
+                })
+                .then((response) => {
+                    this.showToast(response.message || '评论提交成功');
+                    form.reset();
+                    resetReply();
+                    window.dispatchEvent(new CustomEvent('serenity:content-updated', {
+                        detail: { root: document.querySelector('.comments-block') }
+                    }));
+                })
+                .catch((error) => this.showToast(error.message || '提交失败，请稍后重试', 'error'))
+                .finally(() => {
+                    submit.disabled = false;
+                    submit.textContent = '提交评论';
+                });
+        });
+    }
+
+    observeHeader() {
+        const header = document.querySelector('.serenity-header');
+        if (!header) return;
+        let last = 0;
+        window.addEventListener('scroll', () => {
+            const current = window.scrollY;
+            header.classList.toggle('shadow', current > 20);
+            const scrollingUp = current < last;
+            header.classList.toggle('hidden', current > 120 && !scrollingUp);
+            last = current;
+        }, { passive: true });
+    }
+
+    registerGlobalShortcuts() {
+        document.addEventListener('keydown', (event) => {
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+                event.preventDefault();
+                this.searchToggle?.click();
+            }
+        });
+    }
+
+    hydratePostPage() {
+        const holder = document.getElementById('serenity-post-data');
+        if (!holder) return;
+        this.postData = {
+            id: Number(holder.dataset.postId || 0),
+            title: holder.dataset.postTitle || '',
+            siteTitle: holder.dataset.siteTitle || ''
+        };
+    }
+
+    copyLink(url) {
+        if (!navigator.clipboard) {
+            this.showToast('复制失败，请手动选择链接', 'error');
+            return;
+        }
+        navigator.clipboard.writeText(url)
+            .then(() => this.showToast('链接已复制'))
+            .catch(() => this.showToast('复制失败', 'error'));
+    }
+
+    showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `serenity-toast serenity-toast-${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('visible'));
+        setTimeout(() => {
+            toast.classList.remove('visible');
+            setTimeout(() => toast.remove(), 300);
+        }, 2400);
+    }
+}
+
+window.serenityTheme = new SerenityTheme();
+window.serenityTheme.hydratePostPage();
+window.serenityTheme.copyLink = window.serenityTheme.copyLink.bind(window.serenityTheme);

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}标签 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="tag-board">
+    <header>
+        <h1>标签</h1>
+        <p>用关键字串联文章，像翻阅卡片盒一样检索灵感。</p>
+    </header>
+    {% if tags %}
+    <div class="tag-cloud">
+        {% for tag in tags %}
+        <a class="tag-chip" href="/tag/{{ tag.slug }}">
+            <span># {{ tag.name }}</span>
+            <span>{{ tag.post_count or 0 }}</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>🏷️</p>
+        <h3>暂无标签</h3>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}分类 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="category-board">
+    <header>
+        <h1>全部分类</h1>
+        <p>根据主题浏览内容，快速抵达想读的领域。</p>
+    </header>
+    {% if categories %}
+    <div class="category-grid">
+        {% for category in categories %}
+        <article class="category-card">
+            <div class="category-icon">📁</div>
+            <h2>{{ category.name }}</h2>
+            {% if category.description %}
+            <p class="category-description">{{ category.description }}</p>
+            {% endif %}
+            <div class="category-meta">
+                <span>{{ category.post_count or 0 }} 篇文章</span>
+                <a href="{{ url_for('main.category', slug=category.slug) }}" class="serenity-link">查看 →</a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>📂</p>
+        <h3>还没有分类</h3>
+        <p>在后台创建第一个分类，即可在此展示。</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

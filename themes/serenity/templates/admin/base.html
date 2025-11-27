@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+{% set _admin_page = true %}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}管理后台{% endblock %} - {{ config.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('theme.static', filename='css/serenity.css') }}">
+    <style>
+        .serenity-admin-layout {
+            display: flex;
+            min-height: 100vh;
+            background: var(--surface, #f5f6fb);
+        }
+        .serenity-admin-sidebar {
+            width: 250px;
+            background: white;
+            border-right: 1px solid rgba(15,23,42,0.08);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            inset: 0 auto 0 0;
+            z-index: 10;
+            transition: transform .3s ease;
+        }
+        .serenity-admin-sidebar header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(15,23,42,0.08);
+        }
+        .serenity-admin-logo {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--serenity-primary);
+        }
+        .serenity-admin-nav {
+            padding: 1rem 0;
+            flex: 1;
+        }
+        .serenity-admin-nav a {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .75rem 1.5rem;
+            color: #475569;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all .2s ease;
+        }
+        .serenity-admin-nav a:hover,
+        .serenity-admin-nav a.active {
+            color: var(--serenity-primary);
+            background: rgba(77,108,250,0.08);
+            border-left-color: var(--serenity-primary);
+        }
+        .serenity-admin-main {
+            flex: 1;
+            margin-left: 250px;
+            display: flex;
+            flex-direction: column;
+        }
+        .serenity-admin-topbar {
+            background: white;
+            border-bottom: 1px solid rgba(15,23,42,0.08);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        .serenity-admin-content {
+            flex: 1;
+            padding: 2rem;
+        }
+        .serenity-admin-page-title {
+            font-size: 1.8rem;
+            margin: 0 0 .5rem;
+        }
+        .serenity-admin-breadcrumb {
+            display: flex;
+            gap: .5rem;
+            color: #94a3b8;
+            font-size: .9rem;
+        }
+        .serenity-admin-breadcrumb a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .serenity-admin-toggle {
+            display: none;
+            border: none;
+            background: transparent;
+            font-size: 1.25rem;
+        }
+        @media (max-width: 900px) {
+            .serenity-admin-sidebar {
+                transform: translateX(-100%);
+            }
+            .serenity-admin-sidebar.open {
+                transform: translateX(0);
+                box-shadow: 0 20px 80px rgba(15,23,42,0.18);
+            }
+            .serenity-admin-main {
+                margin-left: 0;
+            }
+            .serenity-admin-toggle {
+                display: inline-flex;
+            }
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="serenity-admin-layout">
+        <aside class="serenity-admin-sidebar" id="serenityAdminSidebar">
+            <header>
+                <div class="serenity-admin-logo">Serenity 控制台</div>
+            </header>
+            <nav class="serenity-admin-nav">
+                <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint == 'admin.dashboard' else '' }}">📊 仪表盘</a>
+                <a href="{{ url_for('admin.posts') }}" class="{{ 'active' if request.endpoint.startswith('admin.posts') else '' }}">📝 文章</a>
+                <a href="{{ url_for('admin.categories') }}" class="{{ 'active' if request.endpoint.startswith('admin.categories') else '' }}">📁 分类</a>
+                <a href="{{ url_for('admin.comments') }}" class="{{ 'active' if request.endpoint.startswith('admin.comments') else '' }}">💬 评论</a>
+                <a href="{{ url_for('admin.users') }}" class="{{ 'active' if request.endpoint.startswith('admin.users') else '' }}">👥 用户</a>
+                <a href="{{ url_for('admin.themes') }}" class="{{ 'active' if request.endpoint.startswith('admin.themes') else '' }}">🎨 主题</a>
+                <a href="{{ url_for('admin.plugins') }}" class="{{ 'active' if request.endpoint.startswith('admin.plugins') else '' }}">🔌 插件</a>
+                <a href="{{ url_for('admin.settings') }}" class="{{ 'active' if request.endpoint.startswith('admin.settings') else '' }}">⚙️ 设置</a>
+            </nav>
+        </aside>
+        <main class="serenity-admin-main">
+            <header class="serenity-admin-topbar">
+                <div style="display:flex;align-items:center;gap:1rem;">
+                    <button class="serenity-admin-toggle" type="button" onclick="document.getElementById('serenityAdminSidebar').classList.toggle('open')">☰</button>
+                    <div class="serenity-admin-breadcrumb">
+                        <a href="{{ url_for('admin.dashboard') }}">首页</a>
+                        {% block breadcrumb %}{% endblock %}
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:1rem;">
+                    <span>{{ current_user.display_name or current_user.username }}</span>
+                    <a href="/" title="返回站点">🏠</a>
+                    <a href="/auth/logout" title="退出登录">🚪</a>
+                </div>
+            </header>
+            <section class="serenity-admin-content">
+                <header style="margin-bottom:1.5rem;">
+                    <h1 class="serenity-admin-page-title">{% block page_title %}管理后台{% endblock %}</h1>
+                    <p>{% block page_description %}{% endblock %}</p>
+                </header>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="serenity-alert serenity-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                {% block content %}{% endblock %}
+            </section>
+        </main>
+    </div>
+    <script>
+        document.addEventListener('click', function (event) {
+            const sidebar = document.getElementById('serenityAdminSidebar');
+            if (!sidebar) return;
+            if (window.innerWidth > 900) return;
+            if (!sidebar.contains(event.target) && !event.target.closest('.serenity-admin-toggle')) {
+                sidebar.classList.remove('open');
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

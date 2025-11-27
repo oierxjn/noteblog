@@ -1,0 +1,111 @@
+{
+  "display_name": "Serenity",
+  "description": "一款灵感来自晨雾与纸质阅读体验的主题，强调留白、易读排版与细腻过渡动画。",
+  "version": "1.0.0",
+  "author": "Noteblog Team",
+  "author_website": "https://github.com/streetartist/noteblog",
+  "license": "MIT",
+  "min_noteblog_version": "1.0.0",
+  "is_system": false,
+  "supports_widgets": true,
+  "supports_menus": true,
+  "supports_customizer": true,
+  "supports_post_formats": false,
+  "screenshot": "/themes/serenity/screenshot.png",
+  "demo_url": "",
+  "config_schema": {
+    "site_logo": {
+      "type": "text",
+      "label": "网站 Logo",
+      "description": "建议使用透明背景 SVG 或 PNG"
+    },
+    "site_favicon": {
+      "type": "text",
+      "label": "网站图标",
+      "description": "浏览器标签页小图标"
+    },
+    "primary_color": {
+      "type": "color",
+      "label": "主色调",
+      "default": "#4d6cfa"
+    },
+    "accent_color": {
+      "type": "color",
+      "label": "强调色",
+      "default": "#f8b400"
+    },
+    "neutral_color": {
+      "type": "color",
+      "label": "中性色",
+      "default": "#1f2a37"
+    },
+    "hero_title": {
+      "type": "text",
+      "label": "首页英雄区标题",
+      "default": "写下日常，积累灵感"
+    },
+    "hero_subtitle": {
+      "type": "textarea",
+      "label": "首页英雄区描述",
+      "default": "Serenity 将杂乱信息重新编排，帮助访客在舒适的排版中专注阅读。"
+    },
+    "hero_cta_text": {
+      "type": "text",
+      "label": "首页按钮文字",
+      "default": "开始阅读"
+    },
+    "hero_cta_link": {
+      "type": "text",
+      "label": "首页按钮链接",
+      "default": "/archives"
+    },
+    "layout_density": {
+      "type": "select",
+      "label": "卡片密度",
+      "options": ["comfortable", "cozy", "compact"],
+      "default": "cozy"
+    },
+    "enable_dark_mode": {
+      "type": "checkbox",
+      "label": "启用深色模式",
+      "default": true
+    },
+    "enable_glass_header": {
+      "type": "checkbox",
+      "label": "玻璃态导航栏",
+      "default": true
+    },
+    "show_sidebar": {
+      "type": "checkbox",
+      "label": "显示侧边栏",
+      "default": true
+    },
+    "show_excerpt": {
+      "type": "checkbox",
+      "label": "列表显示摘要",
+      "default": true
+    },
+    "posts_per_page": {
+      "type": "number",
+      "label": "每页文章数量",
+      "default": 10,
+      "min": 1,
+      "max": 50
+    },
+    "sidebar_widgets": {
+      "type": "array",
+      "label": "侧边栏组件顺序",
+      "default": ["recent_posts", "categories", "tags"]
+    },
+    "footer_text": {
+      "type": "textarea",
+      "label": "页脚文字",
+      "default": "© 2025 Serenity Theme for Noteblog."
+    },
+    "analytics_code": {
+      "type": "textarea",
+      "label": "统计代码",
+      "description": "会被直接插入到页面底部"
+    }
+  }
+}

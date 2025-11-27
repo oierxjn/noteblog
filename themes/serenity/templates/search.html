@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}搜索{% if query %} - {{ query }}{% endif %} - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="serenity-search">
+    <header class="search-header">
+        <h1>搜索文章</h1>
+        <p>输入关键词，Serenity 会即时返回匹配内容。</p>
+    </header>
+    <form class="search-bar" action="/search" method="GET">
+        <input type="text" name="q" placeholder="例如：Python、旅行、周报..." value="{{ query or '' }}" autofocus>
+        <button type="submit">搜索</button>
+    </form>
+
+    {% if query %}
+    <div class="search-status">
+        <span>关键词：<strong>{{ query }}</strong></span>
+        {% if posts and posts.total %}
+        <span>找到 {{ posts.total }} 条结果</span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if query and posts and posts.items %}
+    <div class="search-results">
+        {% for post in posts.items %}
+        <article class="search-card">
+            <div class="search-card-head">
+                <time>{{ post.published_at.strftime('%Y-%m-%d') if post.published_at else post.created_at.strftime('%Y-%m-%d') }}</time>
+                {% if post.category %}
+                <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a>
+                {% endif %}
+            </div>
+            <h2><a href="/post/{{ post.slug }}">{{ post.title }}</a></h2>
+            <div class="search-card-meta">作者 · {{ post.author.display_name or post.author.username }}</div>
+            <div class="search-card-excerpt">{{ post.get_excerpt_html(200)|safe }}</div>
+            {% if post.tags %}
+            <div class="post-tags">
+                {% for tag in post.tags[:5] %}
+                <a class="tag-pill" href="/tag/{{ tag.slug }}">{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+
+    {% if posts.pages > 1 %}
+    <nav class="serenity-pagination">
+        {% if posts.has_prev %}
+        <a class="pagination-btn" href="{{ url_for('main.search', q=query, page=posts.prev_num) }}">上一页</a>
+        {% endif %}
+        <span>第 {{ posts.page }} / {{ posts.pages }} 页</span>
+        {% if posts.has_next %}
+        <a class="pagination-btn" href="{{ url_for('main.search', q=query, page=posts.next_num) }}">下一页</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+    {% elif query %}
+    <div class="empty-state">
+        <p>🔍</p>
+        <h3>没有找到匹配结果</h3>
+        <p>尝试调整关键词，或浏览 <a href="/archives" class="serenity-link">归档</a> 与 <a class="serenity-link" href="/categories">分类</a>。</p>
+    </div>
+    {% else %}
+    <div class="search-welcome">
+        <p>✨</p>
+        <h3>开始你的第一条搜索</h3>
+        <p>可以输入主题、标签或日期 —— Serenity 会帮你定位内容。</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

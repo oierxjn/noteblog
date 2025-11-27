@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}归档 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="archives-board">
+    <header>
+        <h1>文章归档</h1>
+        <p>按年份/月份回顾所有发布。</p>
+        <div class="archive-stats">
+            <div>
+                <span class="stat-label">文章</span>
+                <strong>{{ total_posts or 0 }}</strong>
+            </div>
+            <div>
+                <span class="stat-label">分类</span>
+                <strong>{{ total_categories or 0 }}</strong>
+            </div>
+            <div>
+                <span class="stat-label">标签</span>
+                <strong>{{ total_tags or 0 }}</strong>
+            </div>
+            <div>
+                <span class="stat-label">总字数</span>
+                <strong>{{ total_words or 0 }}</strong>
+            </div>
+        </div>
+    </header>
+
+    {% if archives %}
+    <div class="archive-timeline">
+        {% for year, items in archives|dictsort(true) %}
+        <section class="timeline-year">
+            <h2>{{ year }}</h2>
+            <div class="timeline-list">
+                {% for post in items %}
+                <article>
+                    <div class="timeline-meta">
+                        <time>{{ post.created_at.strftime('%m-%d') }}</time>
+                        {% if post.category %}
+                        <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a>
+                        {% endif %}
+                    </div>
+                    <h3><a href="/post/{{ post.slug }}">{{ post.title }}</a></h3>
+                    {% if post.summary %}
+                    <p>{{ post.summary }}</p>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>📚</p>
+        <h3>暂无归档</h3>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

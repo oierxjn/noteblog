@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_title or 'Noteblog' }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}{{ site_description or '' }}{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}{{ site_keywords or '' }}{% endblock %}">
+
+    {% if get_theme_config().site_favicon %}
+    <link rel="icon" href="{{ get_theme_config().site_favicon }}">
+    {% endif %}
+
+    <link rel="stylesheet" href="/themes/serenity/static/css/serenity.css">
+    <link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+    <style>
+        :root {
+            --serenity-primary: {{ get_theme_config().primary_color or '#4d6cfa' }};
+            --serenity-accent: {{ get_theme_config().accent_color or '#f8b400' }};
+            --serenity-neutral: {{ get_theme_config().neutral_color or '#1f2a37' }};
+            --serenity-density: {{ get_theme_config().layout_density or 'cozy' }};
+        }
+    </style>
+    {% if get_theme_config().enable_glass_header != false %}
+    <style>
+        body.serenity-body .serenity-header {
+            backdrop-filter: blur(14px);
+            background: rgba(250, 250, 252, 0.75);
+        }
+        [data-theme="dark"] .serenity-header {
+            background: rgba(16, 18, 27, 0.75);
+        }
+    </style>
+    {% endif %}
+
+    {% block head %}{% endblock %}
+
+    {% if plugin_hooks and plugin_hooks.head_assets %}
+        {% for asset_content in plugin_hooks.head_assets %}
+            {{ asset_content|safe }}
+        {% endfor %}
+    {% endif %}
+</head>
+<body class="serenity-body">
+    <div class="serenity-app">
+        <header class="serenity-header">
+            <div class="serenity-container">
+                <div class="serenity-logo">
+                    {% if get_theme_config().site_logo %}
+                    <a href="/" aria-label="{{ site_title or 'Noteblog' }}">
+                        <img src="{{ get_theme_config().site_logo }}" alt="{{ site_title }}">
+                    </a>
+                    {% else %}
+                    <a href="/">{{ site_title or 'Noteblog' }}</a>
+                    {% endif %}
+                </div>
+                <button class="serenity-nav-toggle" type="button" aria-label="展开导航" data-nav-toggle>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <nav class="serenity-nav" data-nav>
+                    <a href="/" class="serenity-nav-link {% if request.path == '/' %}active{% endif %}">首页</a>
+                    <a href="/archives" class="serenity-nav-link {% if request.path.startswith('/archives') %}active{% endif %}">归档</a>
+                    <a href="/categories" class="serenity-nav-link {% if request.path.startswith('/categories') %}active{% endif %}">分类</a>
+                    <a href="/tags" class="serenity-nav-link {% if request.path.startswith('/tags') %}active{% endif %}">标签</a>
+                    <a href="/search" class="serenity-nav-link {% if request.path.startswith('/search') %}active{% endif %}">搜索</a>
+                    {% if plugin_hooks and plugin_hooks.nav %}
+                        {% for hook_content in plugin_hooks.nav %}
+                            {{ hook_content|safe }}
+                        {% endfor %}
+                    {% endif %}
+                </nav>
+                <div class="serenity-actions">
+                    <button class="serenity-icon-button" type="button" data-search-toggle title="搜索">
+                        <span class="sr-only">搜索文章</span>
+                        🔍
+                    </button>
+                    {% if get_theme_config().enable_dark_mode != false %}
+                    <button class="serenity-icon-button theme-toggle" type="button" title="切换深浅色">
+                        <span class="sr-only">切换主题</span>
+                        ☀️
+                    </button>
+                    {% endif %}
+                    {% if current_user.is_authenticated %}
+                    <details class="serenity-user-menu">
+                        <summary>
+                            <div class="user-avatar">{{ (current_user.display_name or current_user.username)[:1].upper() }}</div>
+                            <span class="user-name">{{ current_user.display_name or current_user.username }}</span>
+                        </summary>
+                        <div class="user-menu-panel">
+                            <a href="/auth/profile">个人资料</a>
+                            <a href="/?modal=edit_profile" data-modal-trigger="edit_profile">编辑资料</a>
+                            {% if current_user.is_admin %}
+                            <a href="/admin">管理后台</a>
+                            {% endif %}
+                            <a href="/auth/logout">退出登录</a>
+                        </div>
+                    </details>
+                    {% else %}
+                    <button class="serenity-ghost-button" type="button" data-modal-trigger="login">登录</button>
+                    <button class="serenity-solid-button" type="button" data-modal-trigger="register">注册</button>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        {% block hero %}{% endblock %}
+
+        <main class="serenity-main">
+            <div class="serenity-container">
+                <div class="serenity-layout {% if get_theme_config().show_sidebar == false or _admin_page %}no-sidebar{% endif %}">
+                    <div class="main-content">
+                        {% if plugin_hooks and plugin_hooks.content_top %}
+                            {% for hook_content in plugin_hooks.content_top %}
+                                {{ hook_content|safe }}
+                            {% endfor %}
+                        {% endif %}
+                        {% block content %}{% endblock %}
+                        {% if plugin_hooks and plugin_hooks.content_bottom %}
+                            {% for hook_content in plugin_hooks.content_bottom %}
+                                {{ hook_content|safe }}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    {% if get_theme_config().show_sidebar != false and not _admin_page %}
+                    <aside class="sidebar">
+                        {% block sidebar %}
+                        <section class="widget">
+                            <h3 class="widget-title">最新文章</h3>
+                            <ul class="widget-list">
+                                {% for post in (recent_posts|default([]))[:5] %}
+                                <li><a href="/post/{{ post.slug }}">{{ post.title }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </section>
+                        <section class="widget">
+                            <h3 class="widget-title">分类</h3>
+                            <ul class="widget-list">
+                                {% for category in (categories|default([])) %}
+                                <li><a href="/category/{{ category.slug }}">{{ category.name }} ({{ category.post_count or 0 }})</a></li>
+                                {% endfor %}
+                            </ul>
+                        </section>
+                        <section class="widget">
+                            <h3 class="widget-title">标签</h3>
+                            <div class="tag-cloud">
+                                {% for tag in (tags|default([])) %}
+                                <a class="tag-pill" href="/tag/{{ tag.slug }}">{{ tag.name }}</a>
+                                {% endfor %}
+                            </div>
+                        </section>
+                        {% if plugin_hooks and plugin_hooks.sidebar_bottom %}
+                            {% for hook_content in plugin_hooks.sidebar_bottom %}
+                                {{ hook_content|safe }}
+                            {% endfor %}
+                        {% endif %}
+                        {% endblock %}
+                    </aside>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+
+        <footer class="serenity-footer">
+            <div class="serenity-container">
+                <p>{{ get_theme_config().footer_text or '© 2025 Serenity Theme for Noteblog.' }}</p>
+                <p>
+                    Powered by <a href="https://github.com/streetartist/noteblog">Noteblog</a> · Theme Serenity
+                </p>
+                {% if plugin_hooks and plugin_hooks.footer %}
+                    {% for hook_content in plugin_hooks.footer %}
+                        {{ hook_content|safe }}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </footer>
+
+        <button class="serenity-back-to-top" type="button" title="回到顶部" aria-label="回到顶部">
+            ↑
+        </button>
+
+        <div class="serenity-search-modal" aria-hidden="true">
+            <div class="search-panel" role="dialog" aria-modal="true">
+                <header>
+                    <h3>搜索文章</h3>
+                    <button class="serenity-icon-button" type="button" data-search-close aria-label="关闭搜索">×</button>
+                </header>
+                <form action="/search" method="GET">
+                    <input type="text" name="q" placeholder="输入关键词..." autocomplete="off">
+                    <button type="submit">搜索</button>
+                </form>
+                <p class="search-hint">按 ESC 关闭</p>
+            </div>
+        </div>
+
+        {% if not current_user.is_authenticated %}
+        {% include 'auth/login.html' %}
+        {% endif %}
+
+        {% if current_user.is_authenticated %}
+        <div class="serenity-modal" data-modal="edit_profile" aria-hidden="true">
+            <div class="modal-card" role="dialog" aria-modal="true">
+                <header>
+                    <h3>编辑资料</h3>
+                    <button type="button" class="serenity-icon-button" data-modal-close aria-label="关闭">×</button>
+                </header>
+                <form action="{{ url_for('auth.edit_profile') }}" method="POST" enctype="multipart/form-data">
+                    <label>显示名称
+                        <input type="text" name="display_name" value="{{ current_user.display_name or current_user.username }}">
+                    </label>
+                    <label>邮箱
+                        <input type="email" name="email" value="{{ current_user.email or '' }}">
+                    </label>
+                    <label>个人网站
+                        <input type="url" name="website" value="{{ current_user.website or '' }}" placeholder="https://example.com">
+                    </label>
+                    <label>所在地
+                        <input type="text" name="location" value="{{ current_user.location or '' }}">
+                    </label>
+                    <label>简介
+                        <textarea name="bio" rows="3">{{ current_user.bio or '' }}</textarea>
+                    </label>
+                    <label>头像
+                        <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp">
+                    </label>
+                    <button type="submit" class="serenity-solid-button">保存</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="/themes/serenity/static/js/serenity.js"></script>
+    <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+    (function() {
+        const options = {
+            delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '$', right: '$', display: false },
+                { left: '\\[', right: '\\]', display: true },
+                { left: '\\(', right: '\\)', display: false }
+            ],
+            throwOnError: false
+        };
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body, options);
+            }
+        });
+        window.addEventListener('serenity:content-updated', function(event) {
+            if (window.renderMathInElement) {
+                renderMathInElement(event.detail?.root || document.body, options);
+            }
+        });
+    })();
+    </script>
+
+    {% block scripts %}{% endblock %}
+
+    {% if plugin_hooks and plugin_hooks.scripts_assets %}
+        {% for asset_content in plugin_hooks.scripts_assets %}
+            {{ asset_content|safe }}
+        {% endfor %}
+    {% endif %}
+
+    {% if get_theme_config().analytics_code %}
+        {{ get_theme_config().analytics_code|safe }}
+    {% endif %}
+</body>
+</html>

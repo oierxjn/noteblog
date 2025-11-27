@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}服务器开小差 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="error-page">
+    <p class="error-code">500</p>
+    <h1>服务器暂时不可用</h1>
+    <p>我们正在修复问题，请稍后重试或联系管理员。</p>
+    <div class="error-actions">
+        <a class="serenity-solid-button" href="/">回到首页</a>
+        <button class="serenity-ghost-button" type="button" onclick="window.location.reload()">刷新</button>
+    </div>
+</section>
+{% endblock %}
