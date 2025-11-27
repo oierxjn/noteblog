@@ -30,6 +30,9 @@ def create_app(config_name='default'):
     else:
         app = Flask(__name__)
     
+    # 确保默认实例目录存在，便于后续写入上传等数据
+    os.makedirs(app.instance_path, exist_ok=True)
+
     # 配置
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     
@@ -40,6 +43,23 @@ def create_app(config_name='default'):
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # 上传/文件相关配置
+    raw_upload_folder = os.getenv('UPLOAD_FOLDER')
+    if raw_upload_folder:
+        upload_folder = raw_upload_folder if os.path.isabs(raw_upload_folder) else os.path.join(app.instance_path, raw_upload_folder)
+    else:
+        upload_folder = os.path.join(app.instance_path, 'uploads')
+    os.makedirs(upload_folder, exist_ok=True)
+    app.config['UPLOAD_FOLDER'] = upload_folder
+
+    try:
+        app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))
+    except (TypeError, ValueError):
+        app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
+    allowed_uploads = os.getenv('ALLOWED_UPLOAD_EXTENSIONS', 'jpg,jpeg,png,gif,webp')
+    app.config['ALLOWED_UPLOAD_EXTENSIONS'] = {ext.strip().lower() for ext in allowed_uploads.split(',') if ext.strip()}
     
     # 初始化扩展
     db.init_app(app)
@@ -106,6 +126,12 @@ def create_app(config_name='default'):
         static_dir = os.path.join(plugins_dir, plugin_name, 'static')
         # send_from_directory 会处理路径安全性
         return send_from_directory(static_dir, filename)
+
+    # 提供上传文件访问路由（/uploads/...）
+    @app.route('/uploads/<path:filename>')
+    def uploaded_file(filename):
+        upload_dir = app.config.get('UPLOAD_FOLDER', os.path.join(app.instance_path, 'uploads'))
+        return send_from_directory(upload_dir, filename)
     
     # 全局错误处理器
     @app.errorhandler(404)

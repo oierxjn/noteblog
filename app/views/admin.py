@@ -1,9 +1,12 @@
 """
 管理后台视图
 """
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from functools import wraps
+from datetime import datetime
+import os
+import uuid
 from app import db
 from app.models.user import User
 from app.models.post import Post, Category, Tag
@@ -13,6 +16,7 @@ from app.models.theme import Theme
 from app.models.setting import SettingManager
 from app.services.plugin_manager import plugin_manager
 from app.services.theme_manager import theme_manager
+from werkzeug.utils import secure_filename
 
 bp = Blueprint('admin', __name__)
 
@@ -173,14 +177,59 @@ def create_post():
     categories = Category.query.filter_by(is_active=True).all()
     tags = Tag.query.all()
     
+    upload_limit_bytes = current_app.config.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024)
+    upload_limit_mb = max(1, upload_limit_bytes // (1024 * 1024))
+
     context = {
         'categories': categories,
         'tags': tags,
         'site_title': f"创建文章 - {SettingManager.get('site_title', 'Noteblog')} 管理后台",
-        'current_user': current_user
+        'current_user': current_user,
+        'upload_limit_mb': upload_limit_mb
     }
     
     return theme_manager.render_template('admin/create_post.html', **context)
+
+@bp.route('/uploads', methods=['POST'])
+@login_required
+@admin_required
+def upload_media():
+    """上传后台文章所需的图片或资源"""
+    file = request.files.get('file') or request.files.get('image')
+    if not file or not file.filename:
+        return jsonify({'success': 0, 'message': '请选择要上传的文件'}), 400
+
+    filename = secure_filename(file.filename)
+    if '.' not in filename:
+        return jsonify({'success': 0, 'message': '文件缺少有效的扩展名'}), 400
+
+    extension = filename.rsplit('.', 1)[1].lower()
+    allowed_extensions = current_app.config.get('ALLOWED_UPLOAD_EXTENSIONS') or set()
+    if allowed_extensions and extension not in allowed_extensions:
+        return jsonify({'success': 0, 'message': f'不支持的文件类型: .{extension}'}), 400
+
+    upload_root = current_app.config.get('UPLOAD_FOLDER')
+    if not upload_root:
+        current_app.logger.error('UPLOAD_FOLDER 未配置，无法保存上传文件')
+        return jsonify({'success': 0, 'message': '服务器未配置上传目录'}), 500
+
+    # 使用年月分类目录，避免单个目录文件过多
+    relative_dir = datetime.utcnow().strftime('%Y/%m')
+    target_dir = os.path.join(upload_root, relative_dir)
+    os.makedirs(target_dir, exist_ok=True)
+
+    unique_name = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4().hex[:8]}.{extension}"
+    file_path = os.path.join(target_dir, unique_name)
+
+    try:
+        file.save(file_path)
+    except OSError as exc:
+        current_app.logger.exception('保存上传文件失败: %s', exc)
+        return jsonify({'success': 0, 'message': '保存文件失败，请稍后再试'}), 500
+
+    relative_path = f"{relative_dir}/{unique_name}".replace('\\', '/')
+    file_url = url_for('uploaded_file', filename=relative_path)
+    return jsonify({'success': 1, 'url': file_url, 'message': '上传成功'})
 
 @bp.route('/posts/<int:post_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -254,12 +303,16 @@ def edit_post(post_id):
     categories = Category.query.filter_by(is_active=True).all()
     tags = Tag.query.all()
     
+    upload_limit_bytes = current_app.config.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024)
+    upload_limit_mb = max(1, upload_limit_bytes // (1024 * 1024))
+
     context = {
         'post': post,
         'categories': categories,
         'tags': tags,
         'site_title': f"编辑文章 - {SettingManager.get('site_title', 'Noteblog')} 管理后台",
-        'current_user': current_user
+        'current_user': current_user,
+        'upload_limit_mb': upload_limit_mb
     }
     
     return theme_manager.render_template('admin/edit_post.html', **context)

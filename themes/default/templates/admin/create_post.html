@@ -1,5 +1,30 @@
 {% extends "admin/base.html" %}
 
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
+<style>
+.markdown-editor-wrapper .CodeMirror,
+.markdown-editor-wrapper .editor-toolbar {
+    border-color: #dcdfe6;
+    border-radius: 4px;
+}
+
+.markdown-editor-wrapper .CodeMirror {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    min-height: 400px;
+}
+
+.markdown-editor-help {
+    font-size: 12px;
+    color: #909399;
+    margin-top: 8px;
+    line-height: 1.6;
+}
+</style>
+{% endblock %}
+
 {% block admin_content %}
 <div class="admin-create-post">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -46,8 +71,13 @@
                 <!-- 文章内容 -->
                 <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
                     <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">文章内容 <span style="color: #f56c6c;">*</span></h3>
-                    <textarea name="content" rows="15" placeholder="请输入文章内容，支持Markdown格式" required 
-                              style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; resize: vertical;"></textarea>
+                    <div class="markdown-editor-wrapper">
+                        <textarea id="content-editor" name="content" rows="15" placeholder="请输入文章内容，支持Markdown格式" required 
+                                  style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; resize: vertical;"></textarea>
+                        <div class="markdown-editor-help">
+                            使用 Markdown 编写内容。支持粘贴/拖拽图片，将自动上传至服务器（单张不超过 {{ upload_limit_mb }}MB，支持 PNG/JPG/GIF/WebP）。
+                        </div>
+                    </div>
                 </div>
 
                 <!-- SEO设置 -->
@@ -162,12 +192,49 @@
 {% block scripts %}
 {{ super() }}
 <script src="https://unpkg.com/pinyin-pro"></script>
+<script src="https://fastly.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const titleInput = document.querySelector('input[name="title"]');
     const slugInput = document.getElementById('slug');
     const slugPreview = document.getElementById('slug-preview');
     let slugManuallyEdited = !!slugInput.value;
+    const form = document.getElementById('postForm');
+    let markdownEditor = null;
+
+    function initMarkdownEditor() {
+        const textarea = document.querySelector('textarea[name="content"]');
+        if (!textarea || typeof EasyMDE === 'undefined') {
+            console.warn('EasyMDE 未加载或内容输入框缺失');
+            return;
+        }
+
+        const imageMaxSize = {{ upload_limit_mb|int }} * 1024 * 1024;
+        markdownEditor = new EasyMDE({
+            element: textarea,
+            spellChecker: false,
+            placeholder: '使用 Markdown 编写内容，可直接粘贴或拖拽图片',
+            status: ['lines', 'words', 'cursor'],
+            uploadImage: true,
+            imageMaxSize: imageMaxSize,
+            imageAccept: 'image/png,image/jpeg,image/gif,image/webp',
+            imageUploadEndpoint: '{{ url_for('admin.upload_media') }}'
+        });
+
+        const syncContent = () => {
+            if (markdownEditor && markdownEditor.codemirror) {
+                markdownEditor.codemirror.save();
+            }
+        };
+
+        if (form) {
+            form.addEventListener('submit', syncContent);
+        }
+
+        window.__syncMarkdownContent = syncContent;
+    }
+
+    initMarkdownEditor();
 
     function updateSlugPreview() {
         const slug = slugInput.value;
@@ -200,7 +267,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.saveDraft = function() {
-        const form = document.getElementById('postForm');
+        if (typeof window.__syncMarkdownContent === 'function') {
+            window.__syncMarkdownContent();
+        }
         const statusInput = form.querySelector('select[name="status"]');
         statusInput.value = 'draft';
         form.submit();

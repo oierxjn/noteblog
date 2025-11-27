@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}标签：{{ tag.name }} - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block head %}
+<style>
+.tag-hero {
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.tag-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 60%);
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 999px;
+    background: var(--tag-color, var(--primary-color));
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.tag-hero h1 {
+    font-size: 2.25rem;
+    margin: 1rem 0 0.5rem;
+}
+
+.tag-hero p {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.tag-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.tag-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.tag-meta-item svg {
+    color: var(--tag-color, var(--primary-color));
+}
+
+@media (max-width: 768px) {
+    .tag-hero {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+
+    .tag-hero h1 {
+        font-size: 1.75rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+{% set highlight_color = tag.color or 'var(--primary-color)' %}
+<div class="main-content">
+    <section class="tag-hero fade-in-up" style="--tag-color: {{ highlight_color }};">
+        <div class="tag-chip">#{{ tag.name }}</div>
+        <h1>{{ tag.name }}</h1>
+        {% if tag.description %}
+        <p>{{ tag.description }}</p>
+        {% endif %}
+        <div class="tag-meta">
+            <div class="tag-meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 7l9-4 9 4v6c0 5-9 9-9 9s-9-4-9-9V7z"></path>
+                </svg>
+                <span>{{ posts.total if posts else 0 }} 篇相关内容</span>
+            </div>
+            <div class="tag-meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 5h12"></path>
+                    <path d="M9 3v2"></path>
+                    <path d="M7 9h10"></path>
+                    <path d="M17 7v4"></path>
+                    <path d="M5 15h14"></path>
+                    <path d="M5 19h14"></path>
+                </svg>
+                <span>创建于 {{ tag.created_at.strftime('%Y-%m-%d') if tag.created_at else '未知' }}</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="posts-list">
+        {% if posts and posts.items %}
+            {% for post in posts.items %}
+            <article class="post-item fade-in-up">
+                {% if post.featured_image %}
+                <div class="post-thumbnail">
+                    <img src="{{ post.featured_image }}" alt="{{ post.title }}" loading="lazy">
+                </div>
+                {% endif %}
+                <div class="post-content">
+                    <header class="post-header">
+                        <h2 class="post-title">
+                            <a href="/post/{{ post.slug }}">{{ post.title }}</a>
+                        </h2>
+                        <div class="post-meta">
+                            <div class="post-meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                <span>{{ post.author.display_name or post.author.username }}</span>
+                            </div>
+                            <div class="post-meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                <span>{{ post.published_at.strftime('%Y-%m-%d') if post.published_at else post.created_at.strftime('%Y-%m-%d') }}</span>
+                            </div>
+                            {% if post.category %}
+                            <div class="post-meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a>
+                            </div>
+                            {% endif %}
+                            <div class="post-meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <span>{{ post.view_count or 0 }} 阅读</span>
+                            </div>
+                        </div>
+                    </header>
+                    {% if get_theme_config().show_excerpt != false %}
+                    <div class="post-excerpt">
+                        {{ post.excerpt or post.content[:200] + '...' if post.content else '' }}
+                    </div>
+                    {% endif %}
+                    {% if post.tags %}
+                    <div class="post-tags">
+                        {% for post_tag in post.tags %}
+                        <a href="/tag/{{ post_tag.slug }}" class="post-tag{% if post_tag.id == tag.id %} active{% endif %}">
+                            {{ post_tag.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <footer class="post-footer">
+                        <a href="/post/{{ post.slug }}" class="read-more">阅读全文</a>
+                    </footer>
+                </div>
+            </article>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state fade-in-up">
+                <div class="empty-state-icon">🏷️</div>
+                <h3>该标签暂无文章</h3>
+                <p>尝试切换其它标签，稍后再来看看。</p>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if posts and posts.pages > 1 %}
+    <div class="pagination">
+        {% if posts.has_prev %}
+        <a href="{{ url_for('main.tag', slug=tag.slug, page=posts.prev_num) }}" class="pagination-btn prev">上一页</a>
+        {% endif %}
+        <div class="pagination-info">第 {{ posts.page }} / {{ posts.pages }} 页</div>
+        {% if posts.has_next %}
+        <a href="{{ url_for('main.tag', slug=tag.slug, page=posts.next_num) }}" class="pagination-btn next">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const hero = document.querySelector('.tag-hero');
+    if (hero) {
+        hero.style.opacity = '0';
+        hero.style.transform = 'translateY(20px)';
+        requestAnimationFrame(() => {
+            hero.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            hero.style.opacity = '1';
+            hero.style.transform = 'translateY(0)';
+        });
+    }
+});
+</script>
+{% endblock %}

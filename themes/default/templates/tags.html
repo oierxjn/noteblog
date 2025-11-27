@@ -17,11 +17,12 @@
             
             <div class="tags-cloud">
                 {% for tag in tags %}
+                {% set tag_count = tag.post_count if tag.post_count is defined else (tag.posts|length if tag.posts is defined else 0) %}
                 <a href="/tag/{{ tag.slug }}" class="tag-item" 
-                   style="font-size: {{ 12 + (tag.post_count * 2) }}px; 
-                          opacity: {{ 0.7 + (tag.post_count * 0.1) }}">
+                   style="font-size: {{ 12 + (tag_count * 2) }}px; 
+                          opacity: {{ 0.7 + (tag_count * 0.1) }}">
                     <span class="tag-name">{{ tag.name }}</span>
-                    <span class="tag-count">{{ tag.post_count }}</span>
+                    <span class="tag-count">{{ tag_count }}</span>
                 </a>
                 {% endfor %}
             </div>
@@ -30,10 +31,11 @@
                 <h3 class="section-title">按字母排序</h3>
                 <div class="tags-list">
                     {% for tag in tags|sort(attribute='name') %}
+                    {% set tag_count = tag.post_count if tag.post_count is defined else (tag.posts|length if tag.posts is defined else 0) %}
                     <div class="tag-list-item">
                         <a href="/tag/{{ tag.slug }}" class="tag-link">
                             <span class="tag-name">{{ tag.name }}</span>
-                            <span class="tag-count">{{ tag.post_count }}</span>
+                            <span class="tag-count">{{ tag_count }}</span>
                         </a>
                     </div>
                     {% endfor %}

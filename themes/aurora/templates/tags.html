@@ -233,21 +233,24 @@
     
     <div id="cloud-view" class="tags-cloud">
         {% for tag in tags %}
-        <a href="{{ url_for('main.tag', slug=tag.slug) }}" class="tag-cloud-item {{ get_tag_size(tag.post_count) }}">
+        {% set tag_count = tag.post_count if tag.post_count is defined else (tag.posts|length if tag.posts is defined else 0) %}
+        {% set tag_class = 'tag-size-xlarge' if tag_count >= 20 else 'tag-size-large' if tag_count >= 10 else 'tag-size-medium' if tag_count >= 5 else 'tag-size-small' %}
+        <a href="{{ url_for('main.tag', slug=tag.slug) }}" class="tag-cloud-item {{ tag_class }}">
             <span>{{ tag.name }}</span>
-            <span class="tag-count">{{ tag.post_count }}</span>
+            <span class="tag-count">{{ tag_count }}</span>
         </a>
         {% endfor %}
     </div>
     
     <div id="list-view" class="tags-list" style="display: none;">
         {% for tag in tags %}
+        {% set tag_count = tag.post_count if tag.post_count is defined else (tag.posts|length if tag.posts is defined else 0) %}
         <div class="tag-card">
             <div class="tag-card-header">
                 <h3 class="tag-name">{{ tag.name }}</h3>
-                <span class="tag-posts-count">{{ tag.post_count }}</span>
+                <span class="tag-posts-count">{{ tag_count }}</span>
             </div>
-            {% if tag.recent_posts %}
+            {% if tag.recent_posts is defined and tag.recent_posts %}
             <div class="tag-posts">
                 {% for post in tag.recent_posts[:3] %}
                 <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="tag-post" title="{{ post.title }}">

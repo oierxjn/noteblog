@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}标签：{{ tag.name }} - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block description %}{{ tag.description or site_description or '' }}{% endblock %}
+
+{% block content %}
+<div class="tag-page">
+    <div class="page-header">
+        <h1 class="page-title">
+            标签：{{ tag.name }}
+            <el-tag size="small" type="info" style="margin-left: 8px;">#{{ tag.slug }}</el-tag>
+        </h1>
+        <p class="page-subtitle">
+            {{ tag.description or '按该标签浏览相关文章' }}
+        </p>
+        <div class="tag-meta">
+            <span>
+                <i class="el-icon-collection-tag"></i>
+                共 {{ posts.total if posts else 0 }} 篇文章
+            </span>
+            {% if tag.created_at %}
+            <span>
+                <i class="el-icon-time"></i>
+                创建于 {{ tag.created_at.strftime('%Y-%m-%d') }}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="posts-list">
+        {% if posts and posts.items %}
+            {% for post in posts.items %}
+            <article class="post-item">
+                {% if post.featured_image %}
+                <div class="post-thumbnail">
+                    <img src="{{ post.featured_image }}" alt="{{ post.title }}" loading="lazy">
+                </div>
+                {% endif %}
+
+                <div class="post-content">
+                    <header class="post-header">
+                        <h2 class="post-title">
+                            <a href="/post/{{ post.slug }}">{{ post.title }}</a>
+                            {% if post.is_featured %}
+                            <el-tag type="danger" size="small">置顶</el-tag>
+                            {% endif %}
+                            {% if post.is_top %}
+                            <el-tag type="warning" size="small">推荐</el-tag>
+                            {% endif %}
+                        </h2>
+                        <div class="post-meta">
+                            <span class="post-author">
+                                <i class="el-icon-user"></i>
+                                {{ post.author.display_name or post.author.username }}
+                            </span>
+                            <span class="post-date">
+                                <i class="el-icon-time"></i>
+                                {{ post.published_at.strftime('%Y-%m-%d %H:%M:%S') if post.published_at else post.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                            </span>
+                            {% if post.category %}
+                            <span class="post-category">
+                                <i class="el-icon-folder"></i>
+                                <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a>
+                            </span>
+                            {% endif %}
+                            <span class="post-comments">
+                                <i class="el-icon-chat-dot-round"></i>
+                                {{ post.comment_count or 0 }} 评论
+                            </span>
+                            <span class="post-views">
+                                <i class="el-icon-view"></i>
+                                {{ post.view_count or 0 }} 阅读
+                            </span>
+                        </div>
+                    </header>
+
+                    {% if get_theme_config().show_excerpt != false %}
+                    <div class="post-excerpt">
+                        {% if post.excerpt %}
+                            {{ post.get_excerpt_html()|safe }}
+                        {% else %}
+                            {{ post.get_excerpt_html(200)|safe }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if post.tags %}
+                    <div class="post-tags">
+                        {% for post_tag in post.tags %}
+                        <el-tag size="small" type="{{ 'primary' if post_tag.id == tag.id else 'info' }}" style="margin: 2px;">
+                            <a href="/tag/{{ post_tag.slug }}">{{ post_tag.name }}</a>
+                        </el-tag>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <footer class="post-footer">
+                        <el-button type="primary" size="small" @click="readMore('/post/{{ post.slug }}')">
+                            阅读全文
+                        </el-button>
+                    </footer>
+                </div>
+            </article>
+            {% endfor %}
+
+            <div class="pagination">
+                <el-pagination
+                    @current-change="handlePageChange"
+                    :current-page="{{ posts.page }}"
+                    :page-size="{{ posts.per_page }}"
+                    :total="{{ posts.total }}"
+                    layout="prev, pager, next, jumper">
+                </el-pagination>
+            </div>
+        {% else %}
+            <div class="empty-posts">
+                <el-empty description="该标签暂无文章">
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                    <el-button type="primary" @click="goToAdmin">去发布文章</el-button>
+                    {% endif %}
+                </el-empty>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
