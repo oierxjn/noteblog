@@ -7,6 +7,7 @@
 一、目录结构（推荐）
 - themes/<your-theme>/
   - theme.json              # 主题元信息与配置 schema
+  - extensions.py           # 可选：主题扩展入口（后台蓝图/自定义路由）
   - templates/
     - base.html             # 全局骨架（必须）
     - index.html            # 首页/文章列表（推荐）
@@ -70,6 +71,13 @@
 - [ ] Markdown 内容样式（`markdown.css`）覆盖良好，代码块/表格/图片不溢出
 - [ ] 评论表单/列表的类存在并样式可用
 - [ ] 插件钩子（`plugin_hooks.*`）已在合适位置调用或提供占位
+- [ ] 若声明 `custom_pages`，已在 `templates/pages/` 中提供对应模板
+- [ ] 若实现自定义扩展，`extensions.py` 中 Blueprint/路由命名无冲突，且视图通过 `theme_manager.render_template()` 渲染主题模板
+
+十一、主题扩展能力速览
+
+- **声明式前端页面**：在 `theme.json` 的 `custom_pages` 数组中写入 `{route, template, methods?, context?}`，Noteblog 会自动注册路由并渲染指定模板，适合展示静态介绍页或时间线。
+- **自定义扩展入口**：创建 `extensions.py` 并导出一个或多个 Flask Blueprint，主题激活时会自动加载。你可以在同一个文件里既定义后台接口，又注册前端自定义路由，视图中通过 `theme_manager.render_template()` 渲染主题模板，获得与插件同级的灵活性。
 
 十、示例：在模板中渲染插件钩子
 ```

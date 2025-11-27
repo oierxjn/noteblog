@@ -42,6 +42,7 @@ aurora/
 │   ├── js/
 │   │   └── aurora.js       # 主脚本文件
 │   └── images/             # 图片资源目录
+├── extensions.py           # 主题扩展入口（后台接口 + 自定义页面）
 └── templates/
     ├── base.html           # 基础模板
     ├── index.html          # 首页模板
@@ -50,6 +51,8 @@ aurora/
     ├── categories.html     # 分类页模板
     ├── tags.html           # 标签页模板
     ├── archives.html       # 归档页模板
+    ├── pages/
+    │   └── timeline.html   # 自定义页面示例
     ├── 404.html            # 404错误页模板
     ├── 500.html            # 500错误页模板
     ├── admin/
@@ -89,6 +92,27 @@ Aurora 主题提供丰富的配置选项，可以通过 `theme.json` 文件进�
 4. 保存设置并刷新网站
 
 ## 🛠️ 自定义开发
+
+### 主题扩展入口（extensions.py）
+`extensions.py` 是 Aurora 的统一扩展文件：
+
+```python
+THEME_BLUEPRINTS = [extension_bp]
+
+CUSTOM_PAGES = [
+    {
+        "name": "aurora-timeline",
+        "route": "/aurora/timeline",
+        "template": "pages/timeline.html",
+        "context": {"page_title": "Aurora 时间线"}
+    }
+]
+```
+
+- `THEME_BLUEPRINTS`：注册后台接口（例如 `/admin/theme/aurora/status`）。
+- `CUSTOM_PAGES`：声明自定义前端页面，Noteblog 会自动为其添加路由并渲染指定模板。
+
+如需更多页面或 API，只需在 `extensions.py` 中继续添加 Blueprint 路由或新的 `CUSTOM_PAGES` 项目。
 
 ### CSS 变量
 主题使用 CSS 变量系统，方便自定义颜色和样式：

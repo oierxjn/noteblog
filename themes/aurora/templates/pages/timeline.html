@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title or 'Aurora 时间线' }}{% endblock %}
+{% block content %}
+<section class="timeline-page">
+    <header class="timeline-hero">
+        <h1>{{ page_title or 'Aurora 时间线' }}</h1>
+        <p>展示重要节点，帮助访客了解站点的成长历程。</p>
+    </header>
+    <div class="timeline-items">
+        <article class="timeline-item">
+            <span class="timeline-item__meta">2025-01</span>
+            <h2>主题发布</h2>
+            <p>Aurora 主题正式上线，带来灵感来源于北极光的绚丽界面。</p>
+        </article>
+        <article class="timeline-item">
+            <span class="timeline-item__meta">2025-05</span>
+            <h2>性能优化</h2>
+            <p>完成静态资源合并与延迟加载，显著提升首次渲染速度。</p>
+        </article>
+    </div>
+</section>
+{% endblock %}
