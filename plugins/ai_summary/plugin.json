@@ -1,0 +1,37 @@
+{
+  "name": "ai_summary",
+  "display_name": "AI 摘要",
+  "version": "1.0.0",
+  "description": "为文章生成 AI 摘要，仅首访生成并缓存，后台可强制重算。",
+  "author": "Noteblog Team",
+  "license": "MIT",
+  "entry_point": "create_plugin",
+  "blueprints": [
+    { "name": "ai_summary_bp", "url_prefix": "/ai_summary" }
+  ],
+  "requirements": [],
+  "min_noteblog_version": "1.0.0",
+  "max_noteblog_version": "2.0.0",
+  "config_schema": {
+    "model": { "type": "string", "default": "GLM-4.5-Flash", "description": "使用的大模型名称" },
+    "endpoint": { "type": "string", "default": "https://open.bigmodel.cn/api/paas/v4/chat/completions", "description": "接口地址" },
+    "api_key": { "type": "string", "default": "", "description": "大模型 API Key（可用环境变量 BIGMODEL_API_KEY 覆盖）" },
+    "temperature": { "type": "number", "default": 0.7, "description": "采样温度" },
+    "max_tokens": { "type": "integer", "default": 300, "description": "最大输出 tokens" }
+  },
+  "hooks": [
+    "post_context"
+  ],
+  "filters": [
+    "post_context"
+  ],
+  "permissions": ["admin.access"],
+  "templates": {
+    "admin": "templates/admin.html"
+  },
+  "assets": {},
+  "database": {
+    "models": ["post_ai_summaries"],
+    "migrations": []
+  }
+}

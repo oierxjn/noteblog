@@ -1,0 +1,381 @@
+<div class="serenity-admin-content">
+    <header style="margin-bottom:1.5rem;">
+        <h1 class="serenity-admin-page-title">AI 摘要插件</h1>
+        <p>配置大模型接口参数并管理摘要缓存</p>
+    </header>
+<style>
+.ai-summary-admin {
+    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #1f2937;
+    line-height: 1.6;
+}
+.ai-summary-admin .admin-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
+}
+.ai-summary-admin h2 {
+    margin: 0 0 8px;
+    font-size: 22px;
+}
+.ai-summary-admin h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    color: #111827;
+}
+.ai-summary-admin .subtitle {
+    margin: 0 0 24px;
+    color: #6b7280;
+    font-size: 14px;
+}
+.ai-summary-admin .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px 24px;
+}
+.ai-summary-admin label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+}
+.ai-summary-admin input[type="text"],
+.ai-summary-admin input[type="number"],
+.ai-summary-admin textarea {
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #111827;
+    background: #f9fafb;
+}
+.ai-summary-admin input:focus,
+.ai-summary-admin textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    background: #fff;
+}
+.ai-summary-admin .form-note {
+    color: #6b7280;
+    font-size: 12px;
+    margin-top: 6px;
+}
+.ai-summary-admin .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.ai-summary-admin .btn-primary {
+    background: #2563eb;
+    color: #fff;
+}
+.ai-summary-admin .btn-primary:hover {
+    background: #1d4ed8;
+}
+.ai-summary-admin .btn-danger {
+    background: #dc2626;
+    color: #fff;
+}
+.ai-summary-admin .btn-danger:hover {
+    background: #b91c1c;
+}
+.ai-summary-admin .btn-ghost {
+    background: #f3f4f6;
+    color: #374151;
+}
+.ai-summary-admin .btn-ghost:hover {
+    background: #e5e7eb;
+}
+.ai-summary-admin .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
+.ai-summary-admin .status-line {
+    margin-top: 16px;
+    font-size: 13px;
+    color: #6b7280;
+}
+.ai-summary-admin .status-line strong {
+    color: #111827;
+}
+.ai-summary-admin .tips-list {
+    margin: 0;
+    padding-left: 18px;
+    color: #4b5563;
+    font-size: 14px;
+}
+.ai-summary-admin .tips-list li {
+    margin-bottom: 6px;
+}
+.ai-summary-admin .inline-input {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+.ai-summary-admin .inline-input > div {
+    flex: 1 1 220px;
+}
+.ai-summary-admin .log-box {
+    margin-top: 18px;
+    padding: 14px;
+    border: 1px dashed #c7d2fe;
+    border-radius: 8px;
+    background: #eef2ff;
+    color: #4338ca;
+    font-size: 13px;
+    min-height: 40px;
+}
+</style>
+<div class="ai-summary-admin" id="ai-summary-admin">
+    <div class="admin-card">
+        <h2>AI 摘要插件</h2>
+        <p class="subtitle">配置大模型接口参数并管理摘要缓存，首次访问文章时会自动生成。</p>
+        <form id="ai-summary-config" onsubmit="return false;">
+            <div class="form-grid">
+                <div>
+                    <label for="cfg-model">模型名称</label>
+                    <input type="text" id="cfg-model" name="model" placeholder="GLM-4.5-Flash" value="{{ config.model }}">
+                    <p class="form-note">与服务商面板保持一致，如使用 OpenAI 可填 gpt-4o-mini。</p>
+                </div>
+                <div>
+                    <label for="cfg-endpoint">接口地址</label>
+                    <input type="text" id="cfg-endpoint" name="endpoint" placeholder="https://open.bigmodel.cn/api/paas/v4/chat/completions" value="{{ config.endpoint }}">
+                    <p class="form-note">支持任意兼容 OpenAI Chat Completions 的入口。</p>
+                </div>
+                <div>
+                    <label for="cfg-api-key">API Key</label>
+                    <input type="text" id="cfg-api-key" name="api_key" placeholder="仅在需要更新时填写，留空保持原值">
+                    <p class="form-note">可通过环境变量 BIGMODEL_API_KEY 覆盖并避免写入数据库。</p>
+                </div>
+                <div>
+                    <label for="cfg-temperature">Temperature</label>
+                    <input type="number" id="cfg-temperature" name="temperature" min="0" max="2" step="0.1" value="{{ config.temperature }}">
+                    <p class="form-note">数值越高摘要越发散，推荐 0.3 - 0.8。</p>
+                </div>
+                <div>
+                    <label for="cfg-max-tokens">最大输出 Tokens</label>
+                    <input type="number" id="cfg-max-tokens" name="max_tokens" min="64" max="800" step="10" value="{{ config.max_tokens }}">
+                    <p class="form-note">摘要会被限制在此字数上限内。</p>
+                </div>
+            </div>
+            <div class="actions" style="margin-top: 18px;">
+                <button type="button" class="btn btn-primary" onclick="window.saveAISummaryConfig(this)">
+                    保存配置
+                </button>
+                <button type="button" class="btn btn-ghost" onclick="document.getElementById('ai-summary-config').reset()">
+                    重置未保存的输入
+                </button>
+            </div>
+        </form>
+        <ul class="tips-list">
+            <li>API Key 字段为空时不会覆盖旧值，方便只调整模型或参数。</li>
+            <li>生产环境建议在系统层面设置 BIGMODEL_API_KEY，便于密钥轮换。</li>
+        </ul>
+    </div>
+
+    <div class="admin-card">
+        <h3>缓存与调试</h3>
+        <p class="subtitle">可针对单篇或全部文章删除缓存，下一次访问会重新请求大模型。</p>
+        <div class="inline-input">
+            <div>
+                <label for="ai-summary-post-id">文章 ID</label>
+                <input type="number" id="ai-summary-post-id" placeholder="在后台文章列表中查看 ID">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="window.forceAISummaryForPost(this)">
+                指定文章重算
+            </button>
+        </div>
+        <div class="actions">
+            <button type="button" class="btn btn-danger" onclick="window.forceAllAISummaries(this)">
+                清空所有摘要缓存
+            </button>
+            <button type="button" class="btn btn-ghost" onclick="window.refreshAISummaryStatus()">
+                刷新状态信息
+            </button>
+        </div>
+        <div class="log-box" id="ai-summary-status">尚未执行任何操作。</div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const statusBox = document.getElementById('ai-summary-status');
+
+    function getMessageInstance() {
+        if (window.ElMessage) {
+            return window.ElMessage;
+        }
+        if (window.ElementPlus && window.ElementPlus.ElMessage) {
+            return window.ElementPlus.ElMessage;
+        }
+        if (window.ELEMENT && window.ELEMENT.Message) {
+            return window.ELEMENT.Message;
+        }
+        return null;
+    }
+
+    function showMessage(message, type) {
+        const Message = getMessageInstance();
+        if (Message) {
+            try {
+                Message({ message: message, type: type || 'info', duration: 3000 });
+            } catch (err) {
+                Message(message);
+            }
+        } else {
+            alert(message);
+        }
+    }
+
+    function updateStatus(text) {
+        if (statusBox) {
+            const now = new Date().toLocaleString();
+            statusBox.textContent = `[${now}] ${text}`;
+        }
+    }
+
+    function toggleLoading(btn, loading) {
+        if (!btn) {
+            return;
+        }
+        if (loading) {
+            btn.dataset.originalText = btn.textContent;
+            btn.textContent = '处理中...';
+            btn.disabled = true;
+            btn.classList.add('is-loading');
+        } else {
+            btn.textContent = btn.dataset.originalText || '提交';
+            btn.disabled = false;
+            btn.classList.remove('is-loading');
+        }
+    }
+
+    window.saveAISummaryConfig = function(btn) {
+        const form = document.getElementById('ai-summary-config');
+        if (!form) {
+            return;
+        }
+        const payload = {
+            model: form.querySelector('#cfg-model').value.trim(),
+            endpoint: form.querySelector('#cfg-endpoint').value.trim(),
+            temperature: parseFloat(form.querySelector('#cfg-temperature').value) || 0.7,
+            max_tokens: parseInt(form.querySelector('#cfg-max-tokens').value, 10) || 300
+        };
+        const apiKey = form.querySelector('#cfg-api-key').value.trim();
+        if (apiKey) {
+            payload.api_key = apiKey;
+        }
+        toggleLoading(btn, true);
+        fetch('/plugins/ai_summary/api/config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(payload)
+        })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    showMessage('配置保存成功', 'success');
+                    updateStatus('已更新模型配置。');
+                    form.querySelector('#cfg-api-key').value = '';
+                } else {
+                    showMessage(data.message || '配置保存失败', 'error');
+                    updateStatus('配置保存失败，详见控制台。');
+                }
+            })
+            .catch(function(err) {
+                console.error(err);
+                showMessage('网络异常，稍后重试', 'error');
+                updateStatus('网络异常，无法保存配置。');
+            })
+            .finally(function() {
+                toggleLoading(btn, false);
+            });
+    };
+
+    window.forceAISummaryForPost = function(btn) {
+        const input = document.getElementById('ai-summary-post-id');
+        if (!input) {
+            return;
+        }
+        const postId = parseInt((input.value || '').trim(), 10);
+        if (!postId || postId <= 0) {
+            showMessage('请输入有效的文章 ID', 'warning');
+            return;
+        }
+        toggleLoading(btn, true);
+        fetch(`/plugins/ai_summary/api/force/${postId}`, {
+            method: 'POST',
+            credentials: 'same-origin'
+        })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    showMessage('已标记该文章下次访问重算', 'success');
+                    updateStatus(`文章 ${postId} 缓存已清除。`);
+                } else {
+                    showMessage(data.message || '操作失败', 'error');
+                    updateStatus('指定文章清理失败。');
+                }
+            })
+            .catch(function(err) {
+                console.error(err);
+                showMessage('网络异常，稍后重试', 'error');
+                updateStatus('网络异常，无法清理指定文章。');
+            })
+            .finally(function() {
+                toggleLoading(btn, false);
+            });
+    };
+
+    window.forceAllAISummaries = function(btn) {
+        if (!confirm('确认要清空所有文章的 AI 摘要缓存吗？下次访问将重新调用大模型。')) {
+            return;
+        }
+        toggleLoading(btn, true);
+        fetch('/plugins/ai_summary/api/force_all', {
+            method: 'POST',
+            credentials: 'same-origin'
+        })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    showMessage(data.message || '已清空缓存', 'success');
+                    updateStatus(data.message || '已清空所有摘要缓存。');
+                } else {
+                    showMessage(data.message || '操作失败', 'error');
+                    updateStatus('清空缓存失败。');
+                }
+            })
+            .catch(function(err) {
+                console.error(err);
+                showMessage('网络异常，稍后重试', 'error');
+                updateStatus('网络异常，无法清空缓存。');
+            })
+            .finally(function() {
+                toggleLoading(btn, false);
+            });
+    };
+
+    window.refreshAISummaryStatus = function() {
+        updateStatus('已刷新状态，可在操作后查看最新反馈。');
+    };
+})();
+</script>

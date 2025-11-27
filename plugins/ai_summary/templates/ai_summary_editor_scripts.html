@@ -1,0 +1,134 @@
+<script>
+(function() {
+    if (window.__aiSummaryEditorScriptLoaded) {
+        return;
+    }
+    window.__aiSummaryEditorScriptLoaded = true;
+
+    const endpoint = "{{ url_for('ai_summary.generate_preview') }}";
+
+    function getMessageInstance() {
+        if (window.ElMessage) {
+            return window.ElMessage;
+        }
+        if (window.ElementPlus && window.ElementPlus.ElMessage) {
+            return window.ElementPlus.ElMessage;
+        }
+        if (window.ELEMENT && window.ELEMENT.Message) {
+            return window.ELEMENT.Message;
+        }
+        return null;
+    }
+
+    function showToast(message, type) {
+        const Message = getMessageInstance();
+        if (Message) {
+            try {
+                Message({ message, type: type || 'info', duration: 3000 });
+            } catch (err) {
+                Message(message);
+            }
+        } else {
+            alert(message);
+        }
+    }
+
+    function setStatus(wrapper, text, state) {
+        if (!wrapper) {
+            return;
+        }
+        const statusEl = wrapper.querySelector('[data-ai-summary-status]');
+        if (!statusEl) {
+            return;
+        }
+        statusEl.textContent = text || '';
+        statusEl.style.color = state === 'error' ? '#b91c1c' : state === 'success' ? '#059669' : '#6b7280';
+    }
+
+    function toggleButtonLoading(button, loading) {
+        if (!button) {
+            return;
+        }
+        if (loading) {
+            button.dataset.originalText = button.textContent;
+            button.textContent = '生成中...';
+            button.disabled = true;
+            button.style.opacity = '0.7';
+        } else {
+            button.textContent = button.dataset.originalText || '即时生成';
+            button.disabled = false;
+            button.style.opacity = '1';
+        }
+    }
+
+    function getEditorContent() {
+        try {
+            const editor = window.__adminMarkdownEditor;
+            if (editor && typeof editor.value === 'function') {
+                return editor.value();
+            }
+        } catch (err) {
+            console.warn('读取 EasyMDE 内容失败', err);
+        }
+        const textarea = document.querySelector('textarea[name="content"]');
+        return textarea ? textarea.value : '';
+    }
+
+    function getPostTitle() {
+        const titleInput = document.querySelector('input[name="title"]');
+        return titleInput ? titleInput.value : '';
+    }
+
+    async function requestAISummary(payload) {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || 'AI 摘要生成失败');
+        }
+        return data.summary;
+    }
+
+    document.addEventListener('click', async function(evt) {
+        const button = evt.target.closest('[data-ai-summary-generate]');
+        if (!button) {
+            return;
+        }
+        evt.preventDefault();
+
+        const wrapper = button.closest('[data-ai-summary-tool]');
+        const title = (getPostTitle() || '').trim();
+        const content = (getEditorContent() || '').trim();
+
+        if (!content) {
+            showToast('请先输入文章内容再生成摘要', 'warning');
+            setStatus(wrapper, '未获取到文章内容，请确认正文已填写。', 'error');
+            return;
+        }
+
+        try {
+            toggleButtonLoading(button, true);
+            setStatus(wrapper, '正在调用大模型生成摘要...', 'info');
+            const summary = await requestAISummary({ title, content });
+            const targetSelector = button.getAttribute('data-target-selector') || "textarea[name='excerpt']";
+            const target = document.querySelector(targetSelector);
+            if (target) {
+                target.value = summary;
+                target.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            setStatus(wrapper, '摘要生成成功，已写入输入框。', 'success');
+            showToast('AI 摘要已写入摘要输入框', 'success');
+        } catch (err) {
+            console.error(err);
+            setStatus(wrapper, err.message || '生成失败，请稍后再试。', 'error');
+            showToast(err.message || 'AI 摘要生成失败', 'error');
+        } finally {
+            toggleButtonLoading(button, false);
+        }
+    });
+})();
+</script>

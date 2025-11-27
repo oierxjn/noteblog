@@ -20,6 +20,28 @@ from werkzeug.utils import secure_filename
 
 bp = Blueprint('admin', __name__)
 
+
+def _collect_editor_hooks(mode: str, post=None):
+    """收集文章编辑页可用的插件钩子内容"""
+    hooks = {
+        'sidebar_top': [],
+        'sidebar_bottom': [],
+        'excerpt_tools': [],
+        'content_tools': [],
+        'after_form': [],
+        'scripts': []
+    }
+
+    # 在跳过插件初始化时直接返回空钩子，避免无谓查询
+    if os.getenv('SKIP_PLUGIN_INIT', '0') == '1':
+        return hooks
+
+    try:
+        return plugin_manager.apply_filters('admin_post_editor_hooks', hooks, mode, post)
+    except Exception as exc:
+        current_app.logger.error('收集文章编辑钩子失败: %s', exc)
+        return hooks
+
 def admin_required(f):
     """管理员权限装饰器"""
     @wraps(f)
@@ -185,7 +207,8 @@ def create_post():
         'tags': tags,
         'site_title': f"创建文章 - {SettingManager.get('site_title', 'Noteblog')} 管理后台",
         'current_user': current_user,
-        'upload_limit_mb': upload_limit_mb
+        'upload_limit_mb': upload_limit_mb,
+        'editor_plugin_hooks': _collect_editor_hooks('create')
     }
     
     return theme_manager.render_template('admin/create_post.html', **context)
@@ -335,7 +358,8 @@ def edit_post(post_id):
         'tags': tags,
         'site_title': f"编辑文章 - {SettingManager.get('site_title', 'Noteblog')} 管理后台",
         'current_user': current_user,
-        'upload_limit_mb': upload_limit_mb
+        'upload_limit_mb': upload_limit_mb,
+        'editor_plugin_hooks': _collect_editor_hooks('edit', post=post)
     }
     
     return theme_manager.render_template('admin/edit_post.html', **context)

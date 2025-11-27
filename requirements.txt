@@ -20,3 +20,4 @@ click
 importlib-metadata
 alembic
 pypinyin
+requests

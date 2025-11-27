@@ -348,7 +348,7 @@
 
 <script>
 (function() {
-    let links = {{ links|tojson }};
+    let links = {% if links is defined %}{{ links|tojson }}{% else %}[]{% endif %};
     let editingId = null;
 
     function renderLinksTable() {
