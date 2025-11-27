@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from app import db
-from app.models.post import Post, Category, Tag
+from app.models.post import Post, Category, Tag, post_tags
 from app.models.comment import Comment
 from app.models.setting import SettingManager
 from app.services.plugin_manager import plugin_manager
@@ -283,6 +283,11 @@ def archives():
         Post.published_at.desc()
     ).all()
     
+    total_posts = len(posts)
+    total_categories = Category.query.filter_by(is_active=True).count()
+    total_tags = Tag.query.count()
+    total_words = sum(len((post.content or '').strip()) for post in posts)
+
     # 按年份分组
     archives = {}
     for post in posts:
@@ -293,6 +298,10 @@ def archives():
     
     context = {
         'archives': archives,
+        'total_posts': total_posts,
+        'total_categories': total_categories,
+        'total_tags': total_tags,
+        'total_words': total_words,
         'site_title': f"归档 - {SettingManager.get('site_title', 'Noteblog')}",
         'current_user': current_user,
         'plugin_hooks': {
@@ -326,6 +335,17 @@ def categories_list():
 def tags_list():
     """标签列表页面"""
     tags = Tag.query.all()
+    tag_counts = {
+        tag_id: count for tag_id, count in
+        db.session.query(post_tags.c.tag_id, db.func.count(Post.id))
+        .join(Post, Post.id == post_tags.c.post_id)
+        .filter(Post.status == 'published')
+        .group_by(post_tags.c.tag_id)
+        .all()
+    }
+
+    for tag in tags:
+        tag.post_count = tag_counts.get(tag.id, 0)
     context = {
         'tags': tags,
         'site_title': f"标签 - {SettingManager.get('site_title', 'Noteblog')}",

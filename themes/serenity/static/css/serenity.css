@@ -7,6 +7,8 @@
     --serenity-border: rgba(15, 23, 42, 0.08);
     --serenity-radius: 18px;
     --serenity-transition: 0.25s ease;
+    --serenity-primary: #4d6cfa;
+    --serenity-accent: #8f5bff;
 }
 
 [data-theme="dark"] {
@@ -16,6 +18,8 @@
     --serenity-text: #f4f5fb;
     --serenity-muted: #96a0c1;
     --serenity-border: rgba(148, 160, 193, 0.25);
+    --serenity-primary: #a8bbff;
+    --serenity-accent: #d2b6ff;
 }
 
 * {
@@ -141,6 +145,10 @@ a {
     cursor: pointer;
     border: none;
     transition: var(--serenity-transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
 }
 
 .serenity-ghost-button {
@@ -164,6 +172,20 @@ a {
     color: var(--serenity-primary);
     text-decoration: none;
     font-weight: 600;
+}
+
+button.serenity-link {
+    border: none;
+    background: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+}
+
+.serenity-link:focus-visible,
+button.serenity-link:focus-visible {
+    outline: 2px solid var(--serenity-primary);
+    outline-offset: 2px;
 }
 
 .serenity-user-menu {
@@ -536,10 +558,29 @@ a {
     gap: 1rem;
 }
 
+.modal-card header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.modal-card header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
 .modal-card form {
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
+}
+
+.modal-card label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-weight: 600;
 }
 
 .modal-card input,
@@ -552,12 +593,51 @@ a {
     color: var(--serenity-text);
 }
 
+.modal-card .serenity-solid-button,
+.modal-card .serenity-ghost-button {
+    width: 100%;
+}
+
 .checkbox {
     display: flex;
     align-items: center;
     gap: 0.4rem;
     font-size: 0.9rem;
     color: var(--serenity-muted);
+}
+
+.modal-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.modal-helper {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--serenity-muted);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.95rem;
+    color: var(--serenity-muted);
+}
+
+.modal-footer .serenity-link {
+    font-weight: 600;
 }
 
 .empty-state {

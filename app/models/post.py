@@ -83,8 +83,27 @@ class Tag(db.Model):
             setattr(self, key, value)
     
     def get_post_count(self):
-        """获取该标签下的文章数量"""
-        return len(self.posts)
+        """获取该标签下已发布文章数量"""
+        return (
+            db.session.query(db.func.count(Post.id))
+            .join(post_tags, Post.id == post_tags.c.post_id)
+            .filter(
+                post_tags.c.tag_id == self.id,
+                Post.status == 'published'
+            )
+            .scalar()
+        ) or 0
+
+    @property
+    def post_count(self):
+        """模板辅助属性，允许缓存结果"""
+        if hasattr(self, '_post_count_cache') and self._post_count_cache is not None:
+            return self._post_count_cache
+        return self.get_post_count()
+
+    @post_count.setter
+    def post_count(self, value):
+        self._post_count_cache = value
     
     def to_dict(self):
         """转换为字典"""
@@ -95,7 +114,7 @@ class Tag(db.Model):
             'description': self.description,
             'color': self.color,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'post_count': self.get_post_count()
+            'post_count': self.post_count
         }
     
     def __repr__(self):
