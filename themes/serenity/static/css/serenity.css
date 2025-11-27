@@ -486,12 +486,14 @@ button.serenity-link:focus-visible {
     position: fixed;
     inset: 0;
     background: rgba(15, 23, 42, 0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     opacity: 0;
     pointer-events: none;
     transition: var(--serenity-transition);
+    z-index: 40;
+    padding: 1.5rem;
+    backdrop-filter: blur(3px);
 }
 
 .serenity-search-modal.active {
@@ -500,17 +502,41 @@ button.serenity-link:focus-visible {
 }
 
 .search-panel {
-    width: min(520px, 92vw);
+    width: min(620px, 92vw);
     background: var(--serenity-surface);
-    border-radius: 20px;
-    padding: 1.5rem;
+    border-radius: 22px;
+    padding: 1.75rem;
     border: 1px solid var(--serenity-border);
-    box-shadow: 0 20px 70px rgba(15, 23, 42, 0.25);
+    box-shadow: 0 30px 90px rgba(15, 23, 42, 0.32);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    transform: translateY(12px);
+    opacity: 0;
+    transition: transform var(--serenity-transition), opacity var(--serenity-transition);
+}
+
+.serenity-search-modal.active .search-panel {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.search-panel header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.search-panel header h3 {
+    margin: 0;
+    font-size: 1.25rem;
 }
 
 .search-panel form {
     display: flex;
     gap: 0.75rem;
+    align-items: center;
 }
 
 .search-panel input {
@@ -518,15 +544,51 @@ button.serenity-link:focus-visible {
     border-radius: 14px;
     border: 1px solid var(--serenity-border);
     padding: 0.85rem 1rem;
+    background: transparent;
+    color: var(--serenity-text);
 }
 
 .search-panel button {
     border-radius: 14px;
     border: none;
     padding: 0.85rem 1.35rem;
-    background: var(--serenity-primary);
+    background: linear-gradient(135deg, var(--serenity-primary), var(--serenity-accent));
     color: #fff;
     font-weight: 600;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.search-panel input:focus-visible {
+    outline: 2px solid var(--serenity-primary);
+    outline-offset: 2px;
+}
+
+.search-panel button:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 3px;
+}
+
+.search-hint {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--serenity-muted);
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .search-panel {
+        padding: 1.5rem;
+    }
+
+    .search-panel form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-panel button {
+        width: 100%;
+    }
 }
 
 .serenity-modal {
@@ -539,6 +601,7 @@ button.serenity-link:focus-visible {
     opacity: 0;
     pointer-events: none;
     transition: var(--serenity-transition);
+    z-index: 50;
 }
 
 .serenity-modal.active {
