@@ -60,6 +60,9 @@ def create_app(config_name='default'):
 
     allowed_uploads = os.getenv('ALLOWED_UPLOAD_EXTENSIONS', 'jpg,jpeg,png,gif,webp')
     app.config['ALLOWED_UPLOAD_EXTENSIONS'] = {ext.strip().lower() for ext in allowed_uploads.split(',') if ext.strip()}
+
+    allowed_mimes = os.getenv('ALLOWED_UPLOAD_MIME_TYPES', 'image/png,image/jpeg,image/gif,image/webp')
+    app.config['ALLOWED_UPLOAD_MIME_TYPES'] = {mime.strip().lower() for mime in allowed_mimes.split(',') if mime.strip()}
     
     # 初始化扩展
     db.init_app(app)

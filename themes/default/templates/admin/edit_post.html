@@ -233,6 +233,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const imageMaxSize = {{ upload_limit_mb|int }} * 1024 * 1024;
+        const uploadEndpoint = '{{ url_for('admin.upload_media') }}';
+
+        const uploadImage = (file, onSuccess, onError) => {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch(uploadEndpoint, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.success === 1 && data.url) {
+                    onSuccess(data.url);
+                } else {
+                    const message = (data && data.message) || '上传失败，请稍后再试';
+                    onError(message);
+                }
+            })
+            .catch(error => {
+                console.error('上传失败', error);
+                onError('上传失败，请检查网络连接');
+            });
+        };
+
         markdownEditor = new EasyMDE({
             element: textarea,
             spellChecker: false,
@@ -241,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
             uploadImage: true,
             imageMaxSize: imageMaxSize,
             imageAccept: 'image/png,image/jpeg,image/gif,image/webp',
-            imageUploadEndpoint: '{{ url_for('admin.upload_media') }}'
+            imageUploadFunction: uploadImage
         });
 
         const syncContent = () => {
@@ -249,6 +275,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 markdownEditor.codemirror.save();
             }
         };
+
+        if (markdownEditor && markdownEditor.codemirror) {
+            markdownEditor.codemirror.on('change', syncContent);
+        }
 
         if (form) {
             form.addEventListener('submit', syncContent);

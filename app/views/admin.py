@@ -196,17 +196,40 @@ def create_post():
 def upload_media():
     """上传后台文章所需的图片或资源"""
     file = request.files.get('file') or request.files.get('image')
-    if not file or not file.filename:
+    if not file:
+        current_app.logger.warning('上传失败：未收到文件字段')
         return jsonify({'success': 0, 'message': '请选择要上传的文件'}), 400
 
-    filename = secure_filename(file.filename)
-    if '.' not in filename:
-        return jsonify({'success': 0, 'message': '文件缺少有效的扩展名'}), 400
+    original_filename = secure_filename(file.filename or '')
+    extension = ''
+    if '.' in original_filename:
+        extension = original_filename.rsplit('.', 1)[1].lower()
 
-    extension = filename.rsplit('.', 1)[1].lower()
+    mime_type = (file.mimetype or '').lower()
+    mime_to_ext = {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/gif': 'gif',
+        'image/webp': 'webp'
+    }
+
+    if not extension:
+        extension = mime_to_ext.get(mime_type, '')
+
+    if not extension:
+        current_app.logger.warning('上传失败：无法识别扩展名，filename=%s mimetype=%s', original_filename, mime_type)
+        return jsonify({'success': 0, 'message': '无法识别文件类型，请使用常见图片格式'}), 400
+
     allowed_extensions = current_app.config.get('ALLOWED_UPLOAD_EXTENSIONS') or set()
+    allowed_mimes = current_app.config.get('ALLOWED_UPLOAD_MIME_TYPES') or set()
+
     if allowed_extensions and extension not in allowed_extensions:
+        current_app.logger.warning('上传失败：扩展名不允许 .%s', extension)
         return jsonify({'success': 0, 'message': f'不支持的文件类型: .{extension}'}), 400
+
+    if allowed_mimes and mime_type and mime_type not in allowed_mimes:
+        current_app.logger.warning('上传失败：MIME不允许 %s', mime_type)
+        return jsonify({'success': 0, 'message': '不支持的文件类型'}), 400
 
     upload_root = current_app.config.get('UPLOAD_FOLDER')
     if not upload_root:
