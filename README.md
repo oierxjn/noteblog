@@ -101,6 +101,12 @@ docker-compose exec noteblog python run.py init
 
 2.  **放置证书**: 将你的证书和私钥文件放入 `docker/ssl/` 目录。如果该目录不存在，请创建它。
 
+> 注意：如果 `docker/ssl/` 目录中**没有** `cert.pem` 或 `key.pem`，Nginx 将不会启用 HTTPS（容器启动不会因缺少证书而失败）。如果你之后添加了证书，请重启 Nginx 容器使其生效：
+
+```bash
+docker-compose restart nginx
+```
+
 3.  **修改 Nginx 配置**:
     - 打开 `docker/nginx/conf.d/default.conf`。
     - 在 `server { listen 80; ... }` 块中，取消注释 `return 301 https://$server_name$request_uri;` 这一行，以强制将 HTTP 请求重定向到 HTTPS。
