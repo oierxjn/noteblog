@@ -25,11 +25,11 @@
   - screenshot.png          # 主题预览图
 
 二、`theme.json` 要点
-- 基本字段：`display_name`, `description`, `version`, `author`, `min_noteblog_version`。
+- 基本字段：`display_name`, `description`, `version`, `author`, `min_version`。
 - `config_schema`：用于主题设置（logo, favicon, primary_color, show_sidebar 等），请使用与默认主题一致的字段名以便管理后台自动生成配置界面。
 
 三、必须实现的 CSS 类（最小集）
-- `.container`、`.site-header`、`.site-main`、`.content-wrapper`、`.main-content`、`.with-sidebar`、`.sidebar`、`.posts-list`、`.post-item`、`.post-content`、`.post-title`、`.post-meta`、`.post-excerpt`、`.post-tags`、`.post-detail`、`.post-footer`、`.comments-section`、`.comments-list`、`.comment-item`、`.comment-reply`、`.site-footer`、`.back-to-top`
+- `.container`、`.site-header`、`.site-main`、`.content-wrapper`、`.main-content`、`.with-sidebar`、`.sidebar`、`.posts-list`、`.post-item`、`.post-detail`、`.post-title`、`.post-meta`、`.post-excerpt`、`.post-tags`、`.post-footer`、`.comments-section`、`.comments-list`、`.comment-item`、`.comment-reply-form`、`.site-footer`、`.back-to-top`
 
 说明：这些类用于核心模板（默认主题已实现）。插件或内置功能会期待这些类存在以便插入 DOM、绑定行为或应用样式。
 
