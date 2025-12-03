@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 from dotenv import load_dotenv
 
@@ -30,6 +31,9 @@ def create_app(config_name='default'):
     else:
         app = Flask(__name__)
     
+    # 使用 ProxyFix 中间件处理反向代理头部
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
     # 确保默认实例目录存在，便于后续写入上传等数据
     os.makedirs(app.instance_path, exist_ok=True)
 
