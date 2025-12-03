@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}全部分类 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="hoshi-card">
+    <header class="hoshi-post-header">
+        <span class="hoshi-meta-pill">Categories</span>
+        <h1 class="hoshi-post-title">所有频道</h1>
+        <p class="hoshi-post-excerpt">在这里挑选你感兴趣的剧情线。</p>
+    </header>
+    <div class="hoshi-category-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem;margin-top:1.5rem;">
+        {% for category in categories|default([]) %}
+        <a class="hoshi-category-card" href="/category/{{ category.slug }}" style="text-decoration:none;color:inherit;border-radius:18px;padding:1rem 1.25rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);backdrop-filter:blur(6px);">
+            <p style="margin:0;font-size:0.85rem;color:var(--hoshi-text-muted);">{{ category.slug }}</p>
+            <h3 style="margin:0.35rem 0 0.25rem;">{{ category.name }}</h3>
+            <p style="margin:0;color:var(--hoshi-text-muted);">{{ category.post_count or 0 }} 篇文章</p>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

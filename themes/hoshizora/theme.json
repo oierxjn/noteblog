@@ -1,0 +1,136 @@
+{
+  "display_name": "星空幻奏 Hoshizora",
+  "description": "一款充满二次元能量的星空主题，融合柔和霓虹、手绘贴纸与虚拟偶像舞台感。",
+  "version": "1.0.0",
+  "author": "Noteblog Community",
+  "author_website": "https://github.com/streetartist/noteblog",
+  "license": "MIT",
+  "min_noteblog_version": "1.0.0",
+  "is_system": false,
+  "supports_widgets": true,
+  "supports_menus": true,
+  "supports_customizer": true,
+  "supports_post_formats": true,
+  "screenshot": "/themes/hoshizora/screenshot.png",
+  "demo_url": "",
+  "config_schema": {
+    "site_logo": {
+      "type": "text",
+      "label": "站点 Logo",
+      "description": "建议使用透明 PNG 或 SVG"
+    },
+    "site_favicon": {
+      "type": "text",
+      "label": "站点图标",
+      "description": "16x16 或 32x32 图标"
+    },
+    "primary_color": {
+      "type": "color",
+      "label": "主色 (魔法能量)",
+      "default": "#8d6bff"
+    },
+    "secondary_color": {
+      "type": "color",
+      "label": "副色 (霓虹描边)",
+      "default": "#ff8bd5"
+    },
+    "accent_color": {
+      "type": "color",
+      "label": "强调色 (星屑)",
+      "default": "#6ff4ff"
+    },
+    "gradient_direction": {
+      "type": "select",
+      "label": "背景渐变方向",
+      "options": ["to right", "to left", "to top", "to bottom", "120deg"],
+      "default": "120deg"
+    },
+    "background_texture": {
+      "type": "select",
+      "label": "背景纹理",
+      "options": ["stars", "grid", "waves", "none"],
+      "default": "stars"
+    },
+    "show_sidebar": {
+      "type": "checkbox",
+      "label": "显示侧边栏",
+      "default": true
+    },
+    "sidebar_widgets": {
+      "type": "array",
+      "label": "默认侧边栏组件",
+      "default": ["profile", "recent_posts", "categories", "tags", "friend_links"]
+    },
+    "show_excerpt": {
+      "type": "checkbox",
+      "label": "首页/列表显示摘要",
+      "default": true
+    },
+    "show_tags": {
+      "type": "checkbox",
+      "label": "显示标签胶囊",
+      "default": true
+    },
+    "enable_parallax": {
+      "type": "checkbox",
+      "label": "启用视差背景",
+      "default": true
+    },
+    "enable_particle_field": {
+      "type": "checkbox",
+      "label": "启用粒子星屑",
+      "default": true
+    },
+    "default_mode": {
+      "type": "select",
+      "label": "默认配色模式",
+      "options": ["light", "dark"],
+      "default": "light"
+    },
+    "enable_dark_mode_toggle": {
+      "type": "checkbox",
+      "label": "允许在前台切换深浅色",
+      "default": true
+    },
+    "hero_tagline": {
+      "type": "text",
+      "label": "Hero 副标题",
+      "default": "少女与星尘，共同编织的冒险日志"
+    },
+    "hero_cta_text": {
+      "type": "text",
+      "label": "Hero 主按钮文字",
+      "default": "开始巡航"
+    },
+    "hero_cta_link": {
+      "type": "text",
+      "label": "Hero 主按钮链接",
+      "default": "/archives"
+    },
+    "hero_highlight_text": {
+      "type": "text",
+      "label": "Hero 高亮文案",
+      "default": "#GalacticLive"
+    },
+    "hero_character_name": {
+      "type": "text",
+      "label": "角色昵称",
+      "default": "星野澪"
+    },
+    "enable_scroll_indicator": {
+      "type": "checkbox",
+      "label": "显示阅读进度条",
+      "default": true
+    },
+    "footer_text": {
+      "type": "textarea",
+      "label": "页脚版权",
+      "default": "© 2025 星空幻奏主题 - 记录每一次心动。"
+    },
+    "analytics_code": {
+      "type": "textarea",
+      "label": "统计/埋点脚本",
+      "description": "支持任何 HTML 片段"
+    }
+  }
+}

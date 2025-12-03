@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}CATEGORY: {{ category.name }} - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<div class="category-header" style="text-align: center; margin-bottom: 60px;">
+    <h1 class="glitch-text" data-text="FILTER: {{ category.name }}" style="color: var(--cg-accent);">
+        FILTER: {{ category.name }}
+    </h1>
+    <p style="font-family: var(--cg-font-mono); color: #888;">FOUND {{ posts|length }} RECORDS</p>
+</div>
+
+<div class="post-grid">
+    {% for post in posts %}
+    <article class="post-card">
+        <h2 class="post-title">
+            <a href="/post/{{ post.slug }}">{{ post.title }}</a>
+        </h2>
+        <div class="post-meta">
+            <span>{{ post.created_at.strftime('%Y-%m-%d') }}</span>
+        </div>
+        <div class="post-excerpt">
+            {{ post.summary or post.content[:150] | striptags }}...
+        </div>
+        <div style="margin-top: 20px;">
+            <a href="/post/{{ post.slug }}" class="btn">ACCESS_FILE_&gt;</a>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% endblock %}

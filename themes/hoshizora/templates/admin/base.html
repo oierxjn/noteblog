@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+{% set _admin_page = true %}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page_title or ('后台 - ' ~ (site_title or config.title or 'Noteblog')) }}{% endblock %}</title>
+    <link rel="stylesheet" href="/themes/hoshizora/static/css/hoshizora.css">
+    <style>
+        body { margin: 0; font-family: 'Poppins', 'Segoe UI', sans-serif; }
+        .hoshi-admin-layout { min-height: 100vh; }
+        .hoshi-admin-sidebar { width: 240px; padding: 1.25rem; }
+        .hoshi-admin-nav { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.25rem; }
+        .hoshi-admin-nav a { text-decoration: none; color: var(--hoshi-text); padding: 0.65rem 0.75rem; border-radius: 12px; }
+        .hoshi-admin-nav a.active { background: rgba(255,255,255,0.12); }
+        .hoshi-admin-main { flex: 1; padding: 2rem; }
+        @media (max-width: 900px) {
+            .hoshi-admin-layout { flex-direction: column; }
+            .hoshi-admin-sidebar { width: 100%; position: sticky; top: 0; z-index: 10; }
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="hoshi-admin-layout">
+        <aside class="hoshi-admin-sidebar">
+            <div class="hoshi-logo" style="font-size:1.25rem;">{{ config.title or 'Noteblog' }}</div>
+            <nav class="hoshi-admin-nav">
+                <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">仪表板</a>
+                <a href="{{ url_for('admin.posts') }}" class="{% if request.endpoint.startswith('admin.posts') %}active{% endif %}">文章</a>
+                <a href="{{ url_for('admin.categories') }}" class="{% if request.endpoint.startswith('admin.categories') %}active{% endif %}">分类</a>
+                <a href="{{ url_for('admin.comments') }}" class="{% if request.endpoint.startswith('admin.comments') %}active{% endif %}">评论</a>
+                <a href="{{ url_for('admin.users') }}" class="{% if request.endpoint.startswith('admin.users') %}active{% endif %}">用户</a>
+                <a href="{{ url_for('admin.themes') }}" class="{% if request.endpoint.startswith('admin.themes') %}active{% endif %}">主题</a>
+                <a href="{{ url_for('admin.plugins') }}" class="{% if request.endpoint.startswith('admin.plugins') %}active{% endif %}">插件</a>
+                <a href="{{ url_for('admin.settings') }}" class="{% if request.endpoint.startswith('admin.settings') %}active{% endif %}">系统</a>
+            </nav>
+        </aside>
+        <main class="hoshi-admin-main">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="hoshi-flashes">
+                        {% for category, message in messages %}
+                        <div class="hoshi-flash hoshi-flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

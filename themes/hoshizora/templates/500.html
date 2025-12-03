@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}出现异常 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block hero %}{% endblock %}
+
+{% block content %}
+<section class="hoshi-card hoshi-empty">
+    <h1 style="margin-top:0;">500</h1>
+    <p>服务器在调试新番，请稍后再试。</p>
+    <a class="hoshi-pill-btn secondary" href="javascript:location.reload()">重新载入</a>
+</section>
+{% endblock %}

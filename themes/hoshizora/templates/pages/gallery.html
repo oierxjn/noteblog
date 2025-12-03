@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title or '星空相册' }} - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="hoshi-card">
+    <header class="hoshi-post-header">
+        <span class="hoshi-meta-pill">Gallery</span>
+        <h1 class="hoshi-post-title">{{ page_title or '星空相册' }}</h1>
+        <p class="hoshi-post-excerpt">{{ page_description or '随手拍下的舞台幕后、草稿与灵感。' }}</p>
+    </header>
+    <div class="hoshi-gallery" style="margin-top:1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;">
+        {% for shot in gallery or [] %}
+        <figure style="border-radius:20px;background:rgba(255,255,255,0.04);padding:1rem;border:1px solid rgba(255,255,255,0.1);">
+            <img src="{{ shot.url }}" alt="{{ shot.title }}" style="width:100%;border-radius:12px;object-fit:cover;height:220px;">
+            <figcaption style="margin-top:0.75rem;font-weight:600;">{{ shot.title }}</figcaption>
+            <p style="margin:0;color:var(--hoshi-text-muted);font-size:0.9rem;">{{ shot.description }}</p>
+        </figure>
+        {% else %}
+        <div class="hoshi-empty">目前还没有上传相册项，可在扩展中传入 `gallery` 数据。</div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

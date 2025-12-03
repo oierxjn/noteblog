@@ -1,0 +1,40 @@
+<article class="hoshi-card">
+    <header class="hoshi-post-header">
+        <div class="hoshi-post-meta">
+            <span class="hoshi-meta-pill">{{ post.category.name if post.category else 'POST' }}</span>
+            <span>{{ (post.published_at or post.created_at).strftime('%Y-%m-%d') if post.created_at else '' }}</span>
+            {% if post.view_count is not none %}
+            <span>· {{ post.view_count }} 阅读</span>
+            {% endif %}
+            {% if post.comment_count is not none %}
+            <span>· {{ post.comment_count }} 评论</span>
+            {% endif %}
+        </div>
+        <h2 class="hoshi-post-title"><a href="/post/{{ post.slug }}">{{ post.title }}</a></h2>
+    </header>
+
+    {% if post.featured_image %}
+    <div class="hoshi-post-cover">
+        <img src="{{ post.featured_image }}" alt="{{ post.title }}" loading="lazy">
+    </div>
+    {% endif %}
+
+    {% if get_theme_config().show_excerpt != false %}
+    <div class="hoshi-post-excerpt">
+        {{ (post.excerpt and post.get_excerpt_html() or post.get_excerpt_html(180))|safe }}
+    </div>
+    {% endif %}
+
+    {% if get_theme_config().show_tags != false and post.tags %}
+    <div class="hoshi-tag-row">
+        {% for tag in post.tags[:6] %}
+        <a class="hoshi-tag-pill" href="/tag/{{ tag.slug }}">#{{ tag.name }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <footer class="hoshi-card-footer">
+        <a class="hoshi-readmore" href="/post/{{ post.slug }}">阅读全文 →</a>
+        <span>{{ post.author.display_name or post.author.username }}</span>
+    </footer>
+</article>

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}归档 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="hoshi-card">
+    <header class="hoshi-post-header">
+        <span class="hoshi-meta-pill">Archives</span>
+        <h1 class="hoshi-post-title">时间胶囊</h1>
+        <p class="hoshi-post-excerpt">按年份回看每一份心动。</p>
+    </header>
+    {% if archives %}
+    <div class="hoshi-timeline" style="margin-top:1.5rem;">
+        {% for year, posts in archives|dictsort(reverse=true) %}
+        <div class="hoshi-timeline-item">
+            <h3 style="margin:0;font-size:1.35rem;">{{ year }}</h3>
+            <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.85rem;">
+                {% for post in posts %}
+                <article>
+                    <p style="margin:0;color:var(--hoshi-text-muted);font-size:0.9rem;">
+                        {{ post.created_at.strftime('%m-%d') if post.created_at else '' }} ·
+                        {% if post.category %}
+                        <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a>
+                        {% endif %}
+                    </p>
+                    <a href="/post/{{ post.slug }}" style="color:var(--hoshi-text);text-decoration:none;font-weight:600;">{{ post.title }}</a>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="hoshi-empty">尚无归档。</div>
+    {% endif %}
+</section>
+{% endblock %}

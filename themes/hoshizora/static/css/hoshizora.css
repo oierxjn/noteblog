@@ -1,0 +1,1043 @@
+:root {
+    --hoshi-primary: #8d6bff;
+    --hoshi-secondary: #ff8bd5;
+    --hoshi-accent: #6ff4ff;
+    --hoshi-surface: rgba(255, 255, 255, 0.9);
+    --hoshi-surface-dark: rgba(20, 24, 39, 0.9);
+    --hoshi-text: #1e1c2d;
+    --hoshi-text-muted: #58526e;
+    --hoshi-border: rgba(255, 255, 255, 0.2);
+    --hoshi-radius-lg: 28px;
+    --hoshi-radius-md: 18px;
+    --hoshi-radius-sm: 12px;
+    --hoshi-shadow-soft: 0 20px 60px rgba(35, 17, 63, 0.18);
+    --hoshi-shadow-card: 0 12px 30px rgba(20, 24, 39, 0.25);
+    --hoshi-grid-gap: clamp(1.25rem, 1.5vw, 2.5rem);
+    --hoshi-header-height: 74px;
+}
+
+[data-theme="dark"] {
+    --hoshi-surface: rgba(19, 21, 35, 0.8);
+    --hoshi-text: #f3f0ff;
+    --hoshi-text-muted: #b9b4d0;
+    --hoshi-border: rgba(255, 255, 255, 0.12);
+}
+
+html {
+    scroll-behavior: smooth;
+    min-height: 100%;
+}
+
+body.hoshizora-body {
+    margin: 0;
+    font-family: 'Poppins', 'LXGW WenKai', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #0f1120;
+    color: var(--hoshi-text);
+    position: relative;
+    overflow-x: hidden;
+}
+
+.hoshi-bg,
+.hoshi-particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.hoshi-bg::before,
+.hoshi-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(255, 139, 213, 0.4), transparent 40%),
+                radial-gradient(circle at 80% 0%, rgba(111, 244, 255, 0.4), transparent 35%),
+                radial-gradient(circle at 50% 80%, rgba(141, 107, 255, 0.4), transparent 35%);
+    filter: blur(40px);
+}
+
+.hoshi-noise {
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Crect x='0' y='0' width='2' height='2'/%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.6;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.hoshi-app {
+    position: relative;
+    z-index: 2;
+}
+
+.hoshi-header {
+    height: var(--hoshi-header-height);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(22px);
+    background: rgba(12, 14, 25, 0.75);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hoshi-header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 100%;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.hoshi-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--hoshi-text);
+    text-decoration: none;
+}
+
+.hoshi-logo img {
+    height: 42px;
+    width: auto;
+}
+
+.hoshi-badge {
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.12);
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    color: var(--hoshi-text);
+}
+
+.hoshi-nav {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.hoshi-nav a {
+    color: var(--hoshi-text-muted);
+    text-decoration: none;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+}
+
+.hoshi-nav a.active,
+.hoshi-nav a:hover {
+    color: var(--hoshi-text);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.hoshi-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.hoshi-user-chip {
+    position: relative;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.hoshi-user-chip:hover .hoshi-user-menu,
+.hoshi-user-chip:focus-within .hoshi-user-menu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+}
+
+.hoshi-user-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translate(-50%, -10px);
+    background: var(--hoshi-surface);
+    border: 1px solid var(--hoshi-border);
+    border-radius: 16px;
+    padding: 0.5rem 0;
+    min-width: 160px;
+    box-shadow: var(--hoshi-shadow-card);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    z-index: 20;
+}
+
+.hoshi-user-menu a {
+    display: block;
+    padding: 0.45rem 1rem;
+    color: var(--hoshi-text);
+    text-decoration: none;
+}
+
+.hoshi-user-menu a:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.hoshi-icon-btn,
+.hoshi-ghost-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--hoshi-text);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hoshi-ghost-btn {
+    padding: 0 1.25rem;
+    width: auto;
+    font-weight: 600;
+}
+
+.hoshi-icon-btn:hover,
+.hoshi-ghost-btn:hover {
+    border-color: var(--hoshi-primary);
+    color: white;
+    background: linear-gradient(120deg, var(--hoshi-primary), var(--hoshi-secondary));
+}
+
+.hoshi-mobile-toggle {
+    display: none;
+    width: 42px;
+    height: 42px;
+}
+
+.hoshi-hero {
+    max-width: 1200px;
+    margin: 2.5rem auto 0;
+    padding: 2.5rem clamp(1.5rem, 4vw, 3rem);
+    border-radius: var(--hoshi-radius-lg);
+    background: linear-gradient(120deg, rgba(141, 107, 255, 0.25), rgba(255, 139, 213, 0.25));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--hoshi-shadow-soft);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transform: translate(var(--parallax-x, 0), var(--parallax-y, 0));
+}
+
+.hoshi-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='160' height='160' viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 80h140M80 10v140' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='1'/%3E%3C/svg%3E");
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.hoshi-hero-left {
+    position: relative;
+    z-index: 2;
+}
+
+.hoshi-hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(12, 14, 25, 0.6);
+    color: white;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+}
+
+.hoshi-hero-title {
+    margin: 1rem 0 0.25rem;
+    font-size: clamp(2.1rem, 6vw, 3.5rem);
+    line-height: 1.1;
+    color: white;
+}
+
+.hoshi-hero-desc {
+    color: #e6defd;
+    font-size: 1.05rem;
+    max-width: 36ch;
+}
+
+.hoshi-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.hoshi-pill-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 0.85rem 1.85rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    color: white;
+}
+
+.hoshi-pill-btn.primary {
+    background: linear-gradient(120deg, var(--hoshi-primary), var(--hoshi-secondary));
+    box-shadow: 0 10px 30px rgba(141, 107, 255, 0.35);
+}
+
+.hoshi-pill-btn.secondary {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hoshi-pill-btn:hover {
+    transform: translateY(-1px) scale(1.01);
+}
+
+.hoshi-hero-right {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hoshi-chibi-card {
+    width: min(320px, 90%);
+    padding: 1.5rem;
+    border-radius: var(--hoshi-radius-md);
+    background: rgba(12, 14, 25, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+    color: white;
+    box-shadow: var(--hoshi-shadow-soft);
+}
+
+.hoshi-chibi-card .avatar {
+    width: 160px;
+    height: 160px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    border: 4px double rgba(255, 255, 255, 0.4);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.05));
+    display: grid;
+    place-items: center;
+    font-size: 2.75rem;
+    color: var(--hoshi-primary);
+}
+
+.hoshi-chibi-card h4 {
+    margin: 0.5rem 0 0;
+    font-size: 1.2rem;
+    letter-spacing: 0.08em;
+}
+
+.hoshi-chibi-card p {
+    margin: 0.25rem 0 1rem;
+    font-size: 0.9rem;
+    color: #d6c7ff;
+}
+
+.hoshi-chibi-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.hoshi-chibi-tags span {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    font-size: 0.8rem;
+}
+
+.hoshi-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: clamp(1.25rem, 4vw, 2.75rem) clamp(1rem, 3vw, 2rem) 3rem;
+}
+
+.hoshi-flashes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.hoshi-flash {
+    padding: 0.85rem 1.25rem;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hoshi-flash-success { border-color: rgba(111, 244, 255, 0.6); }
+.hoshi-flash-error { border-color: rgba(255, 84, 146, 0.6); }
+.hoshi-flash-warning { border-color: rgba(255, 193, 59, 0.6); }
+
+.hoshi-layout {
+    display: grid;
+    grid-template-columns: 3fr 1.15fr;
+    gap: var(--hoshi-grid-gap);
+}
+
+.hoshi-layout.no-sidebar {
+    grid-template-columns: 1fr;
+}
+
+.hoshi-card,
+.hoshi-widget {
+    border-radius: var(--hoshi-radius-md);
+    background: var(--hoshi-surface);
+    border: 1px solid var(--hoshi-border);
+    box-shadow: var(--hoshi-shadow-card);
+    padding: 1.75rem;
+}
+
+.hoshi-feed {
+    display: flex;
+    flex-direction: column;
+    gap: var(--hoshi-grid-gap);
+}
+
+.hoshi-card {
+    margin-bottom: var(--hoshi-grid-gap);
+    position: relative;
+    overflow: hidden;
+}
+
+.hoshi-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(141, 107, 255, 0.08), rgba(111, 244, 255, 0.08));
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.hoshi-card:hover::after {
+    opacity: 1;
+}
+
+.hoshi-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.hoshi-post-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.hoshi-post-title {
+    margin: 0;
+    font-size: clamp(1.5rem, 4vw, 2.1rem);
+    color: var(--hoshi-text);
+}
+
+.hoshi-post-title a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.hoshi-post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    color: var(--hoshi-text-muted);
+    font-size: 0.9rem;
+}
+
+.hoshi-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(141, 107, 255, 0.09);
+    color: var(--hoshi-primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+}
+
+.hoshi-post-cover {
+    border-radius: var(--hoshi-radius-md);
+    overflow: hidden;
+    margin: 1.25rem 0;
+}
+
+.hoshi-post-cover img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    display: block;
+}
+
+.hoshi-post-excerpt {
+    color: var(--hoshi-text-muted);
+    line-height: 1.75;
+    font-size: 1rem;
+}
+
+.hoshi-tag-cloud,
+.hoshi-tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.hoshi-tag-pill {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    color: var(--hoshi-text);
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.hoshi-tag-pill:hover {
+    transform: translateY(-1px) scale(1.02);
+    border-color: var(--hoshi-accent);
+}
+
+.hoshi-card-footer {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hoshi-readmore {
+    text-decoration: none;
+    font-weight: 600;
+    color: var(--hoshi-primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.hoshi-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.hoshi-pagination a,
+.hoshi-pagination span {
+    min-width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--hoshi-text);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hoshi-pagination a.active {
+    background: linear-gradient(120deg, var(--hoshi-primary), var(--hoshi-secondary));
+    color: white;
+}
+
+.hoshi-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--hoshi-grid-gap);
+}
+
+.hoshi-widget-title {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--hoshi-text-muted);
+}
+
+.hoshi-profile-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+}
+
+.hoshi-profile-card img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto;
+    object-fit: cover;
+}
+
+.hoshi-divider {
+    width: 60%;
+    height: 1px;
+    margin: 0.75rem auto;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.hoshi-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.hoshi-list li a {
+    color: var(--hoshi-text);
+    text-decoration: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.45rem 0.75rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.hoshi-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2rem 1rem 3rem;
+    color: #cfc8ff;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.hoshi-footer a {
+    color: var(--hoshi-accent);
+    text-decoration: none;
+}
+
+.hoshi-backtotop {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: 52px;
+    height: 52px;
+    border-radius: 15px;
+    border: none;
+    background: linear-gradient(120deg, var(--hoshi-secondary), var(--hoshi-primary));
+    color: white;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(19, 21, 35, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 10;
+}
+
+.hoshi-backtotop.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.hoshi-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 2rem;
+    transform: translateX(-50%) translateY(20px);
+    padding: 0.85rem 1.5rem;
+    border-radius: 999px;
+    background: rgba(12, 14, 25, 0.85);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--hoshi-shadow-card);
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 30;
+}
+
+.hoshi-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.hoshi-search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(7, 8, 15, 0.85);
+    backdrop-filter: blur(18px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 15;
+}
+
+.hoshi-search-overlay.active {
+    display: flex;
+}
+
+.hoshi-search-box {
+    width: min(640px, 92%);
+    background: var(--hoshi-surface);
+    border-radius: var(--hoshi-radius-md);
+    padding: 2rem;
+    box-shadow: var(--hoshi-shadow-card);
+}
+
+.hoshi-search-box form {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.hoshi-search-box input {
+    flex: 1;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0.85rem 1.25rem;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--hoshi-text);
+}
+
+.hoshi-search-box button {
+    border-radius: 16px;
+    border: none;
+    padding: 0 1.5rem;
+    background: linear-gradient(120deg, var(--hoshi-primary), var(--hoshi-secondary));
+    color: white;
+    font-weight: 600;
+}
+
+.hoshi-auth-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 6, 12, 0.8);
+    backdrop-filter: blur(12px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+.hoshi-auth-modal.active {
+    display: flex;
+}
+
+.hoshi-modal-card {
+    width: min(420px, 92%);
+    border-radius: var(--hoshi-radius-md);
+    background: var(--hoshi-surface);
+    border: 1px solid var(--hoshi-border);
+    padding: 2rem;
+    box-shadow: var(--hoshi-shadow-card);
+}
+
+.hoshi-modal-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.hoshi-input {
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--hoshi-text);
+}
+
+.hoshi-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+}
+
+.hoshi-admin-layout {
+    display: flex;
+    min-height: 100vh;
+    background: radial-gradient(circle at top, rgba(255, 139, 213, 0.15), rgba(12, 14, 25, 0.98));
+}
+
+.hoshi-admin-sidebar {
+    width: 250px;
+    background: rgba(12, 14, 25, 0.85);
+    backdrop-filter: blur(16px);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+}
+
+.hoshi-admin-nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1.5rem;
+    color: var(--hoshi-text);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+}
+
+.hoshi-admin-nav a.active {
+    border-left-color: var(--hoshi-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.hoshi-reading-progress {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 4px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    z-index: 12;
+}
+
+.hoshi-reading-progress span {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--hoshi-secondary), var(--hoshi-primary));
+}
+
+.hoshi-article {
+    font-size: 1.02rem;
+    line-height: 1.8;
+    color: var(--hoshi-text);
+}
+
+.hoshi-article h1,
+.hoshi-article h2,
+.hoshi-article h3,
+.hoshi-article h4 {
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+}
+
+.hoshi-article h2::before {
+    content: "";
+    position: absolute;
+    left: -1rem;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--hoshi-accent);
+}
+
+.hoshi-article pre {
+    background: #0b0d16;
+    color: #f8f8f2;
+    padding: 1rem;
+    border-radius: 16px;
+    overflow-x: auto;
+}
+
+.hoshi-article blockquote {
+    border-left: 4px solid var(--hoshi-accent);
+    padding-left: 1rem;
+    color: var(--hoshi-text-muted);
+    font-style: italic;
+}
+
+.hoshi-comment-form {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.hoshi-comment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.hoshi-comment-reply {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0.75rem 1rem;
+    border-radius: 14px;
+}
+
+.hoshi-comments-list {
+    margin-top: 2rem;
+}
+
+.hoshi-comment-items,
+.hoshi-comment-children {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.hoshi-comment-item {
+    display: flex;
+    gap: 1rem;
+}
+
+.hoshi-comment-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: var(--hoshi-text);
+    overflow: hidden;
+}
+
+.hoshi-comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hoshi-comment-body {
+    flex: 1;
+    border-radius: 18px;
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hoshi-comment-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--hoshi-text-muted);
+}
+
+.hoshi-comment-text {
+    margin-top: 0.75rem;
+    line-height: 1.7;
+}
+
+.hoshi-comment-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.hoshi-comment-children {
+    margin-top: 1rem;
+    padding-left: 3.5rem;
+    border-left: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.hoshi-link-card {
+    display: block;
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.hoshi-category-card:hover {
+    border-color: var(--hoshi-accent);
+}
+
+.hoshi-timeline {
+    border-left: 2px dashed rgba(255, 255, 255, 0.2);
+    margin-left: 1.5rem;
+    padding-left: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.hoshi-timeline-item {
+    position: relative;
+}
+
+.hoshi-timeline-item::before {
+    content: "";
+    position: absolute;
+    left: -1.95rem;
+    top: 0.35rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: linear-gradient(120deg, var(--hoshi-secondary), var(--hoshi-accent));
+    box-shadow: 0 0 12px rgba(255, 139, 213, 0.5);
+}
+
+.hoshi-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--hoshi-text-muted);
+}
+
+@media (max-width: 1024px) {
+    .hoshi-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .hoshi-header-inner {
+        padding: 0 1rem;
+    }
+
+    .hoshi-nav {
+        position: fixed;
+        top: var(--hoshi-header-height);
+        left: 0;
+        right: 0;
+        padding: 1.25rem;
+        backdrop-filter: blur(18px);
+        background: rgba(7, 8, 15, 0.9);
+        flex-direction: column;
+        transform: translateY(-120%);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .hoshi-nav.open {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .hoshi-mobile-toggle {
+        display: grid;
+    }
+}
+
+@media (max-width: 640px) {
+    .hoshi-hero {
+        margin-top: 1.25rem;
+    }
+
+    .hoshi-card,
+    .hoshi-widget {
+        padding: 1.25rem;
+    }
+
+    .hoshi-post-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hoshi-search-box form {
+        flex-direction: column;
+    }
+}

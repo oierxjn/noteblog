@@ -1,0 +1,262 @@
+{% set _theme = get_theme_config() %}
+{% set _default_mode = _theme.default_mode or 'light' %}
+{% set _default_avatar = '/themes/hoshizora/static/images/avatar.svg' %}
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="{{ _default_mode }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page_title or (site_title or 'Noteblog') }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}{{ site_description or page_description or '' }}{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}{{ site_keywords or '' }}{% endblock %}">
+
+    {% if _theme.site_favicon %}
+    <link rel="icon" type="image/png" href="{{ _theme.site_favicon }}">
+    {% endif %}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/themes/hoshizora/static/css/hoshizora.css">
+
+    <style>
+        :root {
+            --hoshi-primary: {{ _theme.primary_color or '#8d6bff' }};
+            --hoshi-secondary: {{ _theme.secondary_color or '#ff8bd5' }};
+            --hoshi-accent: {{ _theme.accent_color or '#6ff4ff' }};
+        }
+        body.hoshizora-body {
+            background: linear-gradient({{ _theme.gradient_direction or '120deg' }}, rgba(17, 12, 32, 0.95), rgba(9, 9, 17, 0.98));
+        }
+        {% if _theme.background_texture == 'grid' %}
+        .hoshi-bg::before,
+        .hoshi-bg::after {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30h60M30 0v60' stroke='%23ffffff' stroke-opacity='0.08' /%3E%3C/svg%3E");
+        }
+        {% elif _theme.background_texture == 'waves' %}
+        .hoshi-bg::before,
+        .hoshi-bg::after {
+            background-image: url("data:image/svg+xml,%3Csvg width='320' height='180' viewBox='0 0 320 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 90 C60 120 120 60 180 90 C240 120 300 60 360 90' stroke='%23ffffff' stroke-opacity='0.07' fill='none' stroke-width='8'/%3E%3C/svg%3E");
+        }
+        {% elif _theme.background_texture == 'none' %}
+        .hoshi-bg::before,
+        .hoshi-bg::after {
+            background: none;
+        }
+        {% endif %}
+    </style>
+
+    {% block head %}{% endblock %}
+
+    {% if plugin_hooks and plugin_hooks.head_assets %}
+        {% for asset in plugin_hooks.head_assets %}
+            {{ asset|safe }}
+        {% endfor %}
+    {% endif %}
+</head>
+<body class="hoshizora-body" data-default-mode="{{ _default_mode }}" data-parallax="{{ 'true' if _theme.enable_parallax != false else 'false' }}" data-particles="{{ 'true' if _theme.enable_particle_field != false else 'false' }}">
+    {% if _theme.enable_scroll_indicator != false %}
+    <div class="hoshi-reading-progress" data-hoshi-progress>
+        <span></span>
+    </div>
+    {% endif %}
+    <div class="hoshi-bg"></div>
+    {% if _theme.enable_particle_field != false %}
+    <canvas class="hoshi-particles" data-hoshi-particles></canvas>
+    {% endif %}
+    <div class="hoshi-noise"></div>
+
+    <div class="hoshi-app">
+        <header class="hoshi-header">
+            <div class="hoshi-header-inner">
+                <div class="hoshi-brand">
+                    <a href="/" class="hoshi-logo">
+                        {% if _theme.site_logo %}
+                            <img src="{{ _theme.site_logo }}" alt="{{ site_title or 'Noteblog' }}">
+                        {% endif %}
+                        <span>{{ site_title or 'Noteblog' }}</span>
+                    </a>
+                    <span class="hoshi-badge">{{ _theme.hero_highlight_text or '#GalacticLive' }}</span>
+                </div>
+                <button class="hoshi-icon-btn hoshi-mobile-toggle" type="button" aria-label="切换导航" data-hoshi-nav-toggle>☰</button>
+                <nav class="hoshi-nav" data-hoshi-nav>
+                    <a href="/" class="{% if request.path == '/' %}active{% endif %}">首页</a>
+                    <a href="/archives" class="{% if request.path.startswith('/archives') %}active{% endif %}">归档</a>
+                    <a href="/categories" class="{% if request.path.startswith('/categories') %}active{% endif %}">分类</a>
+                    <a href="/tags" class="{% if request.path.startswith('/tags') %}active{% endif %}">标签</a>
+                    <a href="/search" class="{% if request.path.startswith('/search') %}active{% endif %}">搜索</a>
+                    {% if plugin_hooks and plugin_hooks.nav %}
+                        {% for hook in plugin_hooks.nav %}
+                            {{ hook|safe }}
+                        {% endfor %}
+                    {% endif %}
+                </nav>
+                <div class="hoshi-actions">
+                    <button class="hoshi-icon-btn" type="button" title="搜索" data-hoshi-search>
+                        🔍
+                    </button>
+                    {% if _theme.enable_dark_mode_toggle != false %}
+                    <button class="hoshi-icon-btn" type="button" title="切换主题" data-hoshi-theme>
+                        ☯
+                    </button>
+                    {% endif %}
+                    {% if current_user.is_authenticated %}
+                        <div class="hoshi-user-chip">
+                            <span>{{ (current_user.display_name or current_user.username)[:1].upper() }}</span>
+                            <div class="hoshi-user-menu">
+                                <a href="/auth/profile">个人资料</a>
+                                {% if current_user.is_admin %}
+                                <a href="/admin">管理后台</a>
+                                {% endif %}
+                                <a href="/auth/logout">退出登录</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <button class="hoshi-ghost-btn" type="button" data-hoshi-auth-toggle="login">登入冒险</button>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        {% block hero %}
+        <section class="hoshi-hero">
+            <div class="hoshi-hero-left">
+                <span class="hoshi-hero-tag">{{ _theme.hero_highlight_text or '#GalacticLive' }}</span>
+                <h1 class="hoshi-hero-title">{{ site_title or 'Noteblog' }}</h1>
+                <p class="hoshi-hero-desc">{{ _theme.hero_tagline or '少女与星尘，共同编织的冒险日志' }}</p>
+                <div class="hoshi-hero-actions">
+                    <a class="hoshi-pill-btn primary" href="{{ _theme.hero_cta_link or '/archives' }}">{{ _theme.hero_cta_text or '开始巡航' }}</a>
+                    <a class="hoshi-pill-btn secondary" href="/hoshizora/gallery">应援相册</a>
+                </div>
+            </div>
+            <div class="hoshi-hero-right">
+                <div class="hoshi-chibi-card">
+                    <div class="avatar">☆</div>
+                    <h4>{{ _theme.hero_character_name or '星野澪' }}</h4>
+                    <p>“留下一枚心动，世界就会亮起来。”</p>
+                    <div class="hoshi-chibi-tags">
+                        <span>Vocal</span>
+                        <span>Drift</span>
+                        <span>Magic</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% endblock %}
+
+        <main class="hoshi-main">
+            <div class="hoshi-container">
+                {% with flashes = get_flashed_messages(with_categories=true) %}
+                    {% if flashes %}
+                    <div class="hoshi-flashes">
+                        {% for category, message in flashes %}
+                        <div class="hoshi-flash hoshi-flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                {% endwith %}
+
+                <div class="hoshi-layout {% if _theme.show_sidebar == false or _admin_page %}no-sidebar{% endif %}">
+                    <section class="hoshi-content">
+                        {% if plugin_hooks and plugin_hooks.content_top %}
+                            {% for block in plugin_hooks.content_top %}
+                                {{ block|safe }}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% block content %}{% endblock %}
+
+                        {% if plugin_hooks and plugin_hooks.content_bottom %}
+                            {% for block in plugin_hooks.content_bottom %}
+                                {{ block|safe }}
+                            {% endfor %}
+                        {% endif %}
+                    </section>
+
+                    {% if _theme.show_sidebar != false and not _admin_page %}
+                    <aside class="hoshi-sidebar">
+                        {% block sidebar %}
+                        <div class="hoshi-widget hoshi-profile-card">
+                            <img src="{{ _theme.site_logo or _default_avatar }}" alt="{{ site_title }}">
+                            <h3>{{ site_title or 'Noteblog' }}</h3>
+                            <p>{{ site_description or '记录我的星尘日记。' }}</p>
+                            <div class="hoshi-divider"></div>
+                            <div class="hoshi-tag-row">
+                                <span class="hoshi-meta-pill">Online</span>
+                                <span class="hoshi-meta-pill">萌力</span>
+                            </div>
+                        </div>
+                        <div class="hoshi-widget">
+                            <h4 class="hoshi-widget-title">最新发表</h4>
+                            <ul class="hoshi-list">
+                                {% for post in (recent_posts|default([]))[:5] %}
+                                <li><a href="/post/{{ post.slug }}"><span>{{ post.title }}</span><small>→</small></a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="hoshi-widget">
+                            <h4 class="hoshi-widget-title">分类</h4>
+                            <div class="hoshi-tag-cloud">
+                                {% for category in categories|default([]) %}
+                                <a class="hoshi-tag-pill" href="/category/{{ category.slug }}">{{ category.name }} · {{ category.post_count or 0 }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="hoshi-widget">
+                            <h4 class="hoshi-widget-title">标签</h4>
+                            <div class="hoshi-tag-cloud">
+                                {% for tag in tags|default([]) %}
+                                <a class="hoshi-tag-pill" href="/tag/{{ tag.slug }}">#{{ tag.name }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if plugin_hooks and plugin_hooks.sidebar_bottom %}
+                            {% for block in plugin_hooks.sidebar_bottom %}
+                                {{ block|safe }}
+                            {% endfor %}
+                        {% endif %}
+                        {% endblock %}
+                    </aside>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+
+        <footer class="hoshi-footer">
+            <p>{{ _theme.footer_text or '© 2025 星空幻奏主题 - 记录每一次心动。' }}</p>
+            <p>Powered by <a href="https://github.com/streetartist/noteblog" target="_blank" rel="noopener">Noteblog</a> · Theme Hoshizora</p>
+            {% if plugin_hooks and plugin_hooks.footer %}
+                {% for block in plugin_hooks.footer %}
+                    {{ block|safe }}
+                {% endfor %}
+            {% endif %}
+        </footer>
+    </div>
+
+    <button class="hoshi-backtotop" type="button" aria-label="回到顶部" data-hoshi-backtotop>↟</button>
+
+    <div class="hoshi-search-overlay" data-hoshi-search-overlay>
+        <div class="hoshi-search-box">
+            <form action="/search" method="GET">
+                <input type="text" name="q" placeholder="输入关键词..." autocomplete="off">
+                <button type="submit">搜索</button>
+                <button type="button" class="hoshi-icon-btn" aria-label="关闭" data-hoshi-search-close>×</button>
+            </form>
+        </div>
+    </div>
+
+    {% include 'auth/login.html' %}
+
+    <script src="/themes/hoshizora/static/js/hoshizora.js" defer></script>
+
+    {% if plugin_hooks and plugin_hooks.body_end %}
+        {% for block in plugin_hooks.body_end %}
+            {{ block|safe }}
+        {% endfor %}
+    {% endif %}
+
+    {% if _theme.analytics_code %}
+        {{ _theme.analytics_code|safe }}
+    {% endif %}
+</body>
+</html>

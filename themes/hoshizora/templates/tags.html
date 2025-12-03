@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}标签索引 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="hoshi-card">
+    <header class="hoshi-post-header">
+        <span class="hoshi-meta-pill">Tags</span>
+        <h1 class="hoshi-post-title">标签银河</h1>
+        <p class="hoshi-post-excerpt">点击任意标签进入对应的分支宇宙。</p>
+    </header>
+    <div class="hoshi-tag-cloud" style="margin-top:1.5rem;">
+        {% for tag in tags|default([]) %}
+        <a class="hoshi-tag-pill" href="/tag/{{ tag.slug }}">#{{ tag.name }} · {{ tag.post_count or 0 }}</a>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

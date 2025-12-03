@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}404 NOT FOUND - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 100px 0;">
+    <h1 class="glitch-text" data-text="404" style="font-size: 10rem; color: var(--cg-secondary); margin: 0;">404</h1>
+    <h2 style="font-family: var(--cg-font-mono); color: var(--cg-primary);">SYSTEM_ERROR: PAGE_NOT_FOUND</h2>
+    <p style="margin: 20px 0;">The requested resource has been deleted or moved to another dimension.</p>
+    <a href="/" class="btn">RETURN_TO_BASE</a>
+</div>
+{% endblock %}

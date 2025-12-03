@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}500 SERVER ERROR - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 100px 0;">
+    <h1 class="glitch-text" data-text="500" style="font-size: 10rem; color: #ff0000; margin: 0;">500</h1>
+    <h2 style="font-family: var(--cg-font-mono); color: var(--cg-primary);">CRITICAL_SYSTEM_FAILURE</h2>
+    <p style="margin: 20px 0;">Internal server error detected. Rebooting reality...</p>
+    <a href="/" class="btn">FORCE_RESTART</a>
+</div>
+{% endblock %}

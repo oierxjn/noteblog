@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}CATEGORIES - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<div class="categories-container" style="text-align: center;">
+    <h1 class="glitch-text" data-text="DATA_CLASSIFICATION" style="margin-bottom: 50px; color: var(--cg-secondary);">
+        DATA_CLASSIFICATION
+    </h1>
+
+    <div class="category-cloud" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; max-width: 900px; margin: 0 auto;">
+        {% for category in categories %}
+        <a href="/category/{{ category.slug }}" class="category-chip" style="
+            display: inline-block;
+            padding: 15px 30px;
+            border: 1px solid var(--cg-primary);
+            color: var(--cg-primary);
+            font-family: var(--cg-font-mono);
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        ">
+            <span style="position: relative; z-index: 2;">{{ category.name }} <span style="font-size: 0.8em; opacity: 0.7;">[{{ category.posts|length }}]</span></span>
+            <div class="hover-bg" style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 0;
+                height: 100%;
+                background: var(--cg-primary);
+                z-index: 1;
+                transition: width 0.3s;
+            "></div>
+        </a>
+        <style>
+            .category-chip:hover .hover-bg { width: 100%; }
+            .category-chip:hover { color: var(--cg-bg) !important; box-shadow: 0 0 20px var(--cg-primary); }
+        </style>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

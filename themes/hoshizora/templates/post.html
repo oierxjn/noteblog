@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block description %}{{ post.excerpt or post.content[:150] }}{% endblock %}
+{% set liked_posts = session.get('liked_posts', []) if session is defined else [] %}
+{% set liked_comments = session.get('liked_comments', []) if session is defined else [] %}
+
+{% block hero %}
+<section class="hoshi-hero" style="margin-top:1.5rem;">
+    <div class="hoshi-hero-left">
+        <span class="hoshi-hero-tag">{{ post.category.name if post.category else 'POST' }}</span>
+        <h1 class="hoshi-hero-title">{{ post.title }}</h1>
+        <p class="hoshi-hero-desc">发布于 {{ (post.published_at or post.created_at).strftime('%Y-%m-%d') if post.created_at else '' }}</p>
+        <div class="hoshi-hero-actions">
+            <button class="hoshi-pill-btn primary" type="button" data-hoshi-like-post data-post-id="{{ post.id }}" data-liked="{{ 'true' if post.id in liked_posts else 'false' }}">
+                喜欢 · <span data-like-count>{{ post.like_count or 0 }}</span>
+            </button>
+            <a class="hoshi-pill-btn secondary" href="#comments">跳到评论</a>
+        </div>
+    </div>
+    <div class="hoshi-hero-right">
+        <div class="hoshi-chibi-card">
+            <div class="avatar">✦</div>
+            <h4>{{ post.author.display_name or post.author.username }}</h4>
+            <p>{{ post.author.bio or '旅途中的记录者' }}</p>
+            <div class="hoshi-chibi-tags">
+                <span>👀 {{ post.view_count or 0 }}</span>
+                {% if post.comment_count is not none %}
+                <span>💬 {{ post.comment_count }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<article class="hoshi-card hoshi-article">
+    <header class="hoshi-post-header">
+        <div class="hoshi-post-meta">
+            <span class="hoshi-meta-pill">{{ post.category.name if post.category else 'POST' }}</span>
+            <span>{{ (post.published_at or post.created_at).strftime('%Y-%m-%d') if post.created_at else '' }}</span>
+            {% if post.category %}
+            <span>· <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a></span>
+            {% endif %}
+            <span>· by {{ post.author.display_name or post.author.username }}</span>
+        </div>
+        {% if post.tags %}
+        <div class="hoshi-tag-row" style="margin-top:0.75rem;">
+            {% for tag in post.tags %}
+            <a class="hoshi-tag-pill" href="/tag/{{ tag.slug }}">#{{ tag.name }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if plugin_hooks and plugin_hooks.post_meta %}
+            {% for hook in plugin_hooks.post_meta %}
+                {{ hook|safe }}
+            {% endfor %}
+        {% endif %}
+    </header>
+
+    {% if post.featured_image %}
+    <figure class="hoshi-post-cover" style="margin-bottom:1.5rem;">
+        <img src="{{ post.featured_image }}" alt="{{ post.title }}" loading="lazy">
+    </figure>
+    {% endif %}
+
+    <div class="hoshi-article">
+        {{ post.get_content_html()|safe }}
+    </div>
+
+    <footer class="hoshi-card-footer" style="margin-top:2rem;">
+        <button class="hoshi-pill-btn secondary" type="button" data-hoshi-copy>{{ request.url }}</button>
+        <div class="hoshi-tag-row">
+            <a class="hoshi-tag-pill" href="mailto:?subject={{ post.title }}&body={{ request.url }}">分享邮件</a>
+            <button class="hoshi-tag-pill" type="button" data-hoshi-like-post data-post-id="{{ post.id }}" data-liked="{{ 'true' if post.id in liked_posts else 'false' }}">
+                ❤ 喜欢 · <span data-like-count>{{ post.like_count or 0 }}</span>
+            </button>
+        </div>
+    </footer>
+
+    {% if plugin_hooks and plugin_hooks.post_footer %}
+        {% for hook in plugin_hooks.post_footer %}
+            {{ hook|safe }}
+        {% endfor %}
+    {% endif %}
+</article>
+
+{% if prev_post or next_post %}
+<nav class="hoshi-card" style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;">
+    {% if prev_post %}
+    <a href="/post/{{ prev_post.slug }}" class="hoshi-link-card" style="flex:1;text-decoration:none;color:inherit;">
+        <strong>← 上一篇</strong>
+        <p>{{ prev_post.title }}</p>
+    </a>
+    {% endif %}
+    {% if next_post %}
+    <a href="/post/{{ next_post.slug }}" class="hoshi-link-card" style="flex:1;text-decoration:none;color:inherit;text-align:right;">
+        <strong>下一篇 →</strong>
+        <p>{{ next_post.title }}</p>
+    </a>
+    {% endif %}
+</nav>
+{% endif %}
+
+<section class="hoshi-card" id="comments">
+    {% set total_comments = post.comment_count if post.comment_count is not none else (comments|length if comments else 0) %}
+    <header class="hoshi-post-header">
+        <span class="hoshi-meta-pill">Comments</span>
+        <h2 class="hoshi-post-title">评论 · {{ total_comments }}</h2>
+    </header>
+
+    {% if post.comment_status == 'open' and allow_comments %}
+    {% if plugin_hooks and plugin_hooks.comment_form_top %}
+        {% for hook in plugin_hooks.comment_form_top %}
+            {{ hook|safe }}
+        {% endfor %}
+    {% endif %}
+    <form class="hoshi-comment-form" data-post-id="{{ post.id }}">
+        <input type="hidden" name="post_id" value="{{ post.id }}">
+        <input type="hidden" name="parent_id" value="">
+        <div class="hoshi-comment-reply" data-reply-indicator hidden>
+            正在回复 <strong data-reply-name></strong>
+            <button type="button" class="hoshi-ghost-btn" data-cancel-reply>取消</button>
+        </div>
+        {% if not current_user.is_authenticated %}
+        <div class="hoshi-comment-grid">
+            <label>昵称
+                <input class="hoshi-input" type="text" name="author_name" required>
+            </label>
+            <label>邮箱
+                <input class="hoshi-input" type="email" name="author_email" required>
+            </label>
+            <label>网站
+                <input class="hoshi-input" type="url" name="author_website" placeholder="https://example.com">
+            </label>
+        </div>
+        {% endif %}
+        <label>内容
+            <textarea class="hoshi-input" name="content" rows="4" required placeholder="友善发言，支持 Markdown"></textarea>
+        </label>
+        <div class="hoshi-card-footer" style="justify-content:flex-end;">
+            <button class="hoshi-pill-btn primary" type="submit">提交评论</button>
+        </div>
+    </form>
+    {% if plugin_hooks and plugin_hooks.comment_form_bottom %}
+        {% for hook in plugin_hooks.comment_form_bottom %}
+            {{ hook|safe }}
+        {% endfor %}
+    {% endif %}
+    {% else %}
+    <div class="hoshi-empty">评论已关闭。</div>
+    {% endif %}
+
+    <div class="hoshi-comments-list">
+        {% if comments %}
+        <ol class="hoshi-comment-items">
+            {% for comment in comments %}
+            {% set display = comment.get_display_name() %}
+            <li class="hoshi-comment-item" data-comment-id="{{ comment.id }}">
+                <div class="hoshi-comment-avatar">
+                    {% if comment.get_display_avatar() %}
+                    <img src="{{ comment.get_display_avatar() }}" alt="{{ display }}">
+                    {% else %}
+                    <span>{{ display[:1].upper() if display else '访' }}</span>
+                    {% endif %}
+                </div>
+                <div class="hoshi-comment-body">
+                    <div class="hoshi-comment-head">
+                        <strong>{{ display }}</strong>
+                        <time>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') if comment.created_at else '' }}</time>
+                        {% if comment.get_display_website() %}
+                        <a href="{{ comment.get_display_website() }}" target="_blank" rel="noopener">🔗</a>
+                        {% endif %}
+                    </div>
+                    <div class="hoshi-comment-text">{{ comment.get_content_html()|safe }}</div>
+                    <div class="hoshi-comment-actions">
+                        {% if post.comment_status == 'open' and allow_comments %}
+                        <button type="button" class="hoshi-ghost-btn" data-hoshi-reply data-comment-id="{{ comment.id }}" data-author="{{ display }}">回复</button>
+                        {% endif %}
+                        <button type="button" class="hoshi-ghost-btn" data-hoshi-comment-like data-comment-id="{{ comment.id }}" data-liked="{{ 'true' if comment.id in liked_comments else 'false' }}">
+                            赞 · <span data-like-count>{{ comment.like_count or 0 }}</span>
+                        </button>
+                    </div>
+                    {% set replies = comment.get_replies() %}
+                    {% if replies %}
+                    <ol class="hoshi-comment-children">
+                        {% for reply in replies %}
+                        {% set reply_name = reply.get_display_name() %}
+                        <li class="hoshi-comment-item" data-comment-id="{{ reply.id }}">
+                            <div class="hoshi-comment-avatar">
+                                {% if reply.get_display_avatar() %}
+                                <img src="{{ reply.get_display_avatar() }}" alt="{{ reply_name }}">
+                                {% else %}
+                                <span>{{ reply_name[:1].upper() if reply_name else '访' }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="hoshi-comment-body">
+                                <div class="hoshi-comment-head">
+                                    <strong>{{ reply_name }}</strong>
+                                    <time>{{ reply.created_at.strftime('%Y-%m-%d %H:%M') if reply.created_at else '' }}</time>
+                                </div>
+                                <div class="hoshi-comment-text">
+                                    {% if display %}<span class="mention">@{{ display }}</span>{% endif %}
+                                    {{ reply.get_content_html()|safe }}
+                                </div>
+                                <div class="hoshi-comment-actions">
+                                    {% if post.comment_status == 'open' and allow_comments %}
+                                    <button type="button" class="hoshi-ghost-btn" data-hoshi-reply data-comment-id="{{ reply.id }}" data-author="{{ reply_name }}">回复</button>
+                                    {% endif %}
+                                    <button type="button" class="hoshi-ghost-btn" data-hoshi-comment-like data-comment-id="{{ reply.id }}" data-liked="{{ 'true' if reply.id in liked_comments else 'false' }}">
+                                        赞 · <span data-like-count>{{ reply.like_count or 0 }}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        <div class="hoshi-empty">还没有评论，来当第一个吧。</div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

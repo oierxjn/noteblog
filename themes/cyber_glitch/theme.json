@@ -1,0 +1,44 @@
+{
+  "display_name": "Cyber Glitch",
+  "description": "前卫的程序员个人博客主题，大胆冲突配色，丰富的动画，精致的图标，整体优雅美观。",
+  "version": "1.0.0",
+  "author": "GitHub Copilot",
+  "license": "MIT",
+  "min_noteblog_version": "1.0.0",
+  "is_system": false,
+  "supports_widgets": true,
+  "supports_menus": true,
+  "supports_customizer": true,
+  "config_schema": {
+    "primary_color": {
+      "type": "color",
+      "label": "主色调 (Neon Green)",
+      "default": "#39ff14"
+    },
+    "secondary_color": {
+      "type": "color",
+      "label": "次色调 (Hot Pink)",
+      "default": "#ff00ff"
+    },
+    "background_color": {
+      "type": "color",
+      "label": "背景色 (Deep Dark)",
+      "default": "#0a0a0a"
+    },
+    "text_color": {
+      "type": "color",
+      "label": "文字颜色",
+      "default": "#e0e0e0"
+    },
+    "glitch_intensity": {
+      "type": "select",
+      "label": "故障强度",
+      "options": [
+        {"label": "低", "value": "low"},
+        {"label": "中", "value": "medium"},
+        {"label": "高", "value": "high"}
+      ],
+      "default": "medium"
+    }
+  }
+}

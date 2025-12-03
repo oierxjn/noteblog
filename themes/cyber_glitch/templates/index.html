@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <h1 class="glitch-text" data-text="{{ get_theme_config().hero_title or 'WELCOME TO THE VOID' }}">
+        {{ get_theme_config().hero_title or 'WELCOME TO THE VOID' }}
+    </h1>
+    <p>{{ get_theme_config().hero_subtitle or 'Code is poetry. Bugs are features. Welcome to my digital garden.' }}</p>
+</section>
+
+<section class="post-list">
+    <div class="post-grid">
+        {% for post in posts %}
+        <article class="post-card">
+            <h2 class="post-title">
+                <a href="/post/{{ post.slug }}">{{ post.title }}</a>
+            </h2>
+            <div class="post-meta">
+                <span>{{ post.created_at.strftime('%Y-%m-%d') }}</span> | 
+                <span>{{ post.category.name if post.category else 'Uncategorized' }}</span>
+            </div>
+            <div class="post-excerpt">
+                {{ post.summary or post.content[:150] | striptags }}...
+            </div>
+            <div style="margin-top: 20px;">
+                <a href="/post/{{ post.slug }}" class="btn">READ_MORE_&gt;</a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    {% if pagination %}
+    <div class="pagination" style="margin-top: 50px; text-align: center;">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('main.index', page=pagination.prev_num) }}" class="btn">&lt;_PREV</a>
+        {% endif %}
+        
+        <span style="margin: 0 20px; font-family: var(--cg-font-mono);">PAGE {{ pagination.page }} / {{ pagination.pages }}</span>
+        
+        {% if pagination.has_next %}
+        <a href="{{ url_for('main.index', page=pagination.next_num) }}" class="btn">NEXT_&gt;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

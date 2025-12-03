@@ -1,0 +1,83 @@
+<div class="hoshi-auth-modal" data-hoshi-auth-modal>
+    <div class="hoshi-modal-card" data-hoshi-auth-panel="login">
+        <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <div>
+                <p class="hoshi-meta-pill">LOGIN</p>
+                <h3 style="margin:0.25rem 0 0;">登入冒险</h3>
+            </div>
+            <button class="hoshi-icon-btn" type="button" aria-label="关闭" data-hoshi-auth-close>×</button>
+        </header>
+        <form action="{{ url_for('auth.login') }}" method="POST">
+            <label>
+                <span>用户名或邮箱</span>
+                <input class="hoshi-input" type="text" name="username" autocomplete="username" required data-hoshi-auth-input="login">
+            </label>
+            <label>
+                <span>密码</span>
+                <input class="hoshi-input" type="password" name="password" autocomplete="current-password" required>
+            </label>
+            <label class="hoshi-checkbox">
+                <input type="checkbox" name="remember_me" value="on"> 记住我
+            </label>
+            <button class="hoshi-pill-btn primary" type="submit">登入星轨</button>
+            <button class="hoshi-ghost-btn" type="button" data-hoshi-auth-toggle="forgot">忘记密码?</button>
+        </form>
+        <footer style="margin-top:1.5rem;text-align:center;color:var(--hoshi-text-muted);">
+            还没有账号？
+            <button class="hoshi-ghost-btn" type="button" data-hoshi-auth-toggle="register">注册星旅人</button>
+        </footer>
+    </div>
+    <div class="hoshi-modal-card" data-hoshi-auth-panel="register" style="display:none;">
+        <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <div>
+                <p class="hoshi-meta-pill">REGISTER</p>
+                <h3 style="margin:0.25rem 0 0;">创建心动档案</h3>
+            </div>
+            <button class="hoshi-icon-btn" type="button" aria-label="关闭" data-hoshi-auth-close>×</button>
+        </header>
+        <form action="{{ url_for('auth.register') }}" method="POST">
+            <label>
+                <span>用户名</span>
+                <input class="hoshi-input" type="text" name="username" required data-hoshi-auth-input="register">
+            </label>
+            <label>
+                <span>显示名称</span>
+                <input class="hoshi-input" type="text" name="display_name">
+            </label>
+            <label>
+                <span>邮箱</span>
+                <input class="hoshi-input" type="email" name="email" autocomplete="email" required>
+            </label>
+            <label>
+                <span>密码</span>
+                <input class="hoshi-input" type="password" name="password" minlength="6" autocomplete="new-password" required>
+            </label>
+            <label>
+                <span>确认密码</span>
+                <input class="hoshi-input" type="password" name="confirm_password" minlength="6" autocomplete="new-password" required>
+            </label>
+            <button class="hoshi-pill-btn primary" type="submit">注册</button>
+            <button class="hoshi-ghost-btn" type="button" data-hoshi-auth-toggle="login">已有账号</button>
+        </form>
+    </div>
+    <div class="hoshi-modal-card" data-hoshi-auth-panel="forgot" style="display:none;">
+        <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <div>
+                <p class="hoshi-meta-pill">RESET</p>
+                <h3 style="margin:0.25rem 0 0;">找回密码</h3>
+            </div>
+            <button class="hoshi-icon-btn" type="button" aria-label="关闭" data-hoshi-auth-close>×</button>
+        </header>
+        <form action="{{ url_for('auth.forgot_password') }}" method="POST">
+            <label>
+                <span>注册邮箱</span>
+                <input class="hoshi-input" type="email" name="email" autocomplete="email" required data-hoshi-auth-input="forgot">
+            </label>
+            <p style="color:var(--hoshi-text-muted);margin:0;">我们会向该邮箱发送重置链接。</p>
+            <div style="display:flex;gap:0.75rem;margin-top:1.25rem;">
+                <button class="hoshi-ghost-btn" type="button" data-hoshi-auth-toggle="login">返回登录</button>
+                <button class="hoshi-pill-btn primary" type="submit">发送链接</button>
+            </div>
+        </form>
+    </div>
+</div>

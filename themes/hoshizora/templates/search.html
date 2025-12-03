@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}搜索 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="hoshi-card">
+    <header class="hoshi-post-header">
+        <span class="hoshi-meta-pill">Search</span>
+        <h1 class="hoshi-post-title">星轨检索</h1>
+        <p class="hoshi-post-excerpt">使用任意关键词唤醒相关的冒险条目。</p>
+    </header>
+    <form action="{{ url_for('main.search') }}" method="GET" style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:1.5rem;">
+        <input class="hoshi-input" type="text" name="q" value="{{ query or '' }}" placeholder="输入关键词..." style="flex:1;min-width:220px;">
+        <button class="hoshi-pill-btn primary" type="submit">搜索</button>
+    </form>
+</section>
+
+<section class="hoshi-feed" style="margin-top:1.5rem;">
+    {% if query %}
+        {% if posts and posts.items %}
+            {% for post in posts.items %}
+                {% include 'partials/post_card.html' %}
+            {% endfor %}
+            {% if posts.pages > 1 %}
+            <nav class="hoshi-pagination">
+                {% if posts.has_prev %}
+                <a href="{{ url_for('main.search', q=query, page=posts.prev_num) }}">上一页</a>
+                {% endif %}
+                <span>{{ posts.page }} / {{ posts.pages }}</span>
+                {% if posts.has_next %}
+                <a href="{{ url_for('main.search', q=query, page=posts.next_num) }}">下一页</a>
+                {% endif %}
+            </nav>
+            {% endif %}
+        {% else %}
+        <div class="hoshi-card hoshi-empty">没有找到与 "{{ query }}" 匹配的结果。</div>
+        {% endif %}
+    {% else %}
+        <div class="hoshi-card hoshi-empty">输入关键词即可开始搜索。</div>
+    {% endif %}
+</section>
+{% endblock %}

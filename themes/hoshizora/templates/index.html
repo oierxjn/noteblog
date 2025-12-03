@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site_title or 'Noteblog' }} · 星空幻奏{% endblock %}
+
+{% block content %}
+<section class="hoshi-feed">
+    {% if posts and posts.items %}
+        {% for post in posts.items %}
+            {% include 'partials/post_card.html' %}
+        {% endfor %}
+    {% else %}
+        <div class="hoshi-card hoshi-empty">
+            <p>还没有文章，去后台写下第一篇冒险故事吧！</p>
+            <a class="hoshi-pill-btn primary" href="/admin/posts/create">立即创作</a>
+        </div>
+    {% endif %}
+</section>
+
+{% if posts and posts.pages > 1 %}
+<nav class="hoshi-pagination">
+    {% if posts.has_prev %}
+    <a href="{{ url_for('main.index', page=posts.prev_num) }}">上一页</a>
+    {% endif %}
+    <span>{{ posts.page }} / {{ posts.pages }}</span>
+    {% if posts.has_next %}
+    <a href="{{ url_for('main.index', page=posts.next_num) }}">下一页</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endblock %}
