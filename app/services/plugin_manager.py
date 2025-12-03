@@ -42,6 +42,7 @@ class PluginManager:
         self.hooks = {}  # 钩子注册表 {hook_name: [hook_info, ...]}
         self.plugins = {}  # 已加载的插件 {plugin_name: plugin_instance}
         self.plugin_modules = {}  # 插件模块 {plugin_name: module}
+        self._last_active_plugin_ids = None  # 缓存活动插件ID集合
         
     def init_app(self, app):
         """初始化应用"""
@@ -52,6 +53,11 @@ class PluginManager:
         with app.app_context():
             self.discover_plugins()
             self.load_active_plugins()
+        
+        # 注册请求前钩子，确保多 worker 环境下插件状态同步
+        @app.before_request
+        def _sync_plugin_state():
+            self.ensure_synced()
     
     def discover_plugins(self):
         """发现插件（仅扫描，不自动注册）"""
@@ -71,9 +77,28 @@ class PluginManager:
         self.hooks.clear()
         self.plugins.clear()
         self.plugin_modules.clear()
+        self._last_active_plugin_ids = None
 
         # 重新加载激活的插件列表
         self.load_active_plugins()
+
+    def ensure_synced(self):
+        """确保内存中的插件状态与数据库一致（用于多 worker 同步）"""
+        try:
+            # 获取当前数据库中活动插件的 ID 集合
+            active_plugins = Plugin.query.filter_by(is_active=True).all()
+            current_ids = frozenset(p.id for p in active_plugins)
+            
+            # 如果活动插件列表变化了，则重新加载
+            if current_ids != self._last_active_plugin_ids:
+                self.hooks.clear()
+                self.plugins.clear()
+                self.plugin_modules.clear()
+                self.load_active_plugins()
+                self._last_active_plugin_ids = current_ids
+        except Exception:
+            # 在数据库未初始化等异常情况下忽略
+            pass
     
     def _register_plugin(self, plugin_name: str, plugin_path: str):
         """注册插件到数据库"""
@@ -116,6 +141,9 @@ class PluginManager:
     def load_active_plugins(self):
         """加载激活的插件"""
         active_plugins = Plugin.query.filter_by(is_active=True).all()
+        
+        # 记录当前活动插件的 ID 集合
+        self._last_active_plugin_ids = frozenset(p.id for p in active_plugins)
         
         for plugin in active_plugins:
             try:

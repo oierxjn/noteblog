@@ -54,18 +54,42 @@ class ThemeManager:
         """初始化应用"""
         self.app = app
         app.theme_manager = self
+        self._last_active_theme_name = None
 
         # 在应用上下文中初始化主题
         with app.app_context():
             self.discover_themes()
             self.load_current_theme()
 
+        # 注册请求前钩子，确保多 worker 环境下主题状态同步
+        @app.before_request
+        def _sync_theme_state():
+            self.ensure_synced()
+
     def reload_from_database(self):
         """Refresh cached theme state after database changes."""
         self._current_theme = None
         self._current_theme_id = None
+        self._last_active_theme_name = None
         self.theme_hooks.clear()
         self.load_current_theme()
+
+    def ensure_synced(self):
+        """确保内存中的主题状态与数据库一致（用于多 worker 同步）"""
+        try:
+            from app.models.setting import SettingManager
+            db_active_theme = SettingManager.get('active_theme', 'default')
+            
+            # 如果数据库中的活动主题与缓存不同，则重新加载
+            if db_active_theme != self._last_active_theme_name:
+                self._current_theme = None
+                self._current_theme_id = None
+                self.theme_hooks.clear()
+                self.load_current_theme()
+                self._last_active_theme_name = db_active_theme
+        except Exception:
+            # 在数据库未初始化等异常情况下忽略
+            pass
 
     def discover_themes(self):
         """发现主题"""
@@ -143,6 +167,7 @@ class ThemeManager:
 
         if theme:
             self.current_theme = theme
+            self._last_active_theme_name = theme_name
             self._load_theme_hooks(theme)
             self._load_theme_extensions(theme)
         else:
@@ -153,6 +178,7 @@ class ThemeManager:
                 default_theme = Theme.query.filter_by(name='default').first()
             if default_theme:
                 self.current_theme = default_theme
+                self._last_active_theme_name = 'default'
                 self._load_theme_hooks(default_theme)
                 self._load_theme_extensions(default_theme)
 
