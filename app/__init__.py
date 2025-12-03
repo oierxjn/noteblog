@@ -34,6 +34,10 @@ def create_app(config_name='default'):
     # 使用 ProxyFix 中间件处理反向代理头部
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
+    # 记录项目根目录，方便路径转换
+    project_root = os.path.abspath(os.getenv('PROJECT_ROOT', os.getcwd()))
+    app.config['PROJECT_ROOT'] = project_root
+
     # 确保默认实例目录存在，便于后续写入上传等数据
     os.makedirs(app.instance_path, exist_ok=True)
 
@@ -133,9 +137,11 @@ def create_app(config_name='default'):
             return {}
 
     # 提供主题静态文件（/themes/<theme>/static/...）的路由，便于主题资源加载
+    from app.utils import path_utils
+
     @app.route('/themes/<theme_name>/static/<path:filename>')
     def theme_static(theme_name, filename):
-        themes_dir = os.path.join(os.getcwd(), 'themes')
+        themes_dir = path_utils.project_path('themes')
         static_dir = os.path.join(themes_dir, theme_name, 'static')
         # send_from_directory 会处理路径安全性
         return send_from_directory(static_dir, filename)
@@ -143,7 +149,7 @@ def create_app(config_name='default'):
     # 提供插件静态文件（/static/plugins/<plugin>/...）的路由，便于插件资源加载
     @app.route('/static/plugins/<plugin_name>/<path:filename>')
     def plugin_static(plugin_name, filename):
-        plugins_dir = os.path.join(os.getcwd(), 'plugins')
+        plugins_dir = path_utils.project_path('plugins')
         static_dir = os.path.join(plugins_dir, plugin_name, 'static')
         # send_from_directory 会处理路径安全性
         return send_from_directory(static_dir, filename)

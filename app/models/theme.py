@@ -4,6 +4,7 @@
 from datetime import datetime
 import json
 from app import db
+from app.utils import path_utils
 
 class Theme(db.Model):
     """主题模型"""
@@ -23,7 +24,7 @@ class Theme(db.Model):
     # 主题状态
     is_active = db.Column(db.Boolean, default=False)
     is_system = db.Column(db.Boolean, default=False)  # 是否为系统主题
-    install_path = db.Column(db.String(255), nullable=False)  # 主题安装路径
+    _install_path = db.Column('install_path', db.String(255), nullable=False)  # 主题安装路径
     
     # 主题特性
     supports_widgets = db.Column(db.Boolean, default=True)  # 是否支持小工具
@@ -51,6 +52,18 @@ class Theme(db.Model):
         self.install_path = install_path
         for key, value in kwargs.items():
             setattr(self, key, value)
+    
+    @property
+    def install_path(self):
+        return path_utils.to_absolute_project_path(self._install_path)
+
+    @install_path.setter
+    def install_path(self, value):
+        self._install_path = path_utils.to_project_relative_path(value) or value
+
+    @property
+    def install_path_relative(self):
+        return self._install_path
     
     def activate(self):
         """激活主题"""
@@ -146,7 +159,7 @@ class Theme(db.Model):
             'max_noteblog_version': self.max_noteblog_version,
             'is_active': self.is_active,
             'is_system': self.is_system,
-            'install_path': self.install_path,
+            'install_path': self.install_path_relative,
             'supports_widgets': self.supports_widgets,
             'supports_menus': self.supports_menus,
             'supports_customizer': self.supports_customizer,

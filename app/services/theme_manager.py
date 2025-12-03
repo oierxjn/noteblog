@@ -13,6 +13,7 @@ from flask import current_app, render_template_string
 
 from app import db
 from app.models.theme import Theme, ThemeHook
+from app.utils import path_utils
 
 
 class ThemeManager:
@@ -37,6 +38,11 @@ class ThemeManager:
         if self._current_theme_id is not None:
             # Always fetch a fresh instance bound to the current session.
             self._current_theme = Theme.query.get(self._current_theme_id)
+            if self._current_theme is not None:
+                return self._current_theme
+
+        # 如果当前主题不可用，尝试重新加载一次
+        self.load_current_theme()
         return self._current_theme
 
     @current_theme.setter
@@ -54,9 +60,16 @@ class ThemeManager:
             self.discover_themes()
             self.load_current_theme()
 
+    def reload_from_database(self):
+        """Refresh cached theme state after database changes."""
+        self._current_theme = None
+        self._current_theme_id = None
+        self.theme_hooks.clear()
+        self.load_current_theme()
+
     def discover_themes(self):
         """发现主题"""
-        themes_dir = os.path.join(os.getcwd(), 'themes')
+        themes_dir = path_utils.project_path('themes')
 
         if not os.path.exists(themes_dir):
             os.makedirs(themes_dir)
@@ -123,6 +136,11 @@ class ThemeManager:
         theme_name = SettingManager.get('active_theme', 'default')
         theme = Theme.query.filter_by(name=theme_name).first()
 
+        if theme is None:
+            # 数据库可能被重置，尝试重新发现并注册主题
+            self.discover_themes()
+            theme = Theme.query.filter_by(name=theme_name).first()
+
         if theme:
             self.current_theme = theme
             self._load_theme_hooks(theme)
@@ -130,6 +148,9 @@ class ThemeManager:
         else:
             # 如果没有找到主题，尝试加载默认主题
             default_theme = Theme.query.filter_by(name='default').first()
+            if default_theme is None:
+                self.discover_themes()
+                default_theme = Theme.query.filter_by(name='default').first()
             if default_theme:
                 self.current_theme = default_theme
                 self._load_theme_hooks(default_theme)
@@ -683,7 +704,7 @@ class ThemeManager:
 
     def create_theme(self, theme_name: str, theme_config: Dict):
         """创建新主题"""
-        themes_dir = os.path.join(os.getcwd(), 'themes')
+        themes_dir = path_utils.project_path('themes')
         theme_path = os.path.join(themes_dir, theme_name)
 
         if os.path.exists(theme_path):

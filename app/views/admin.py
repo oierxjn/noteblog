@@ -1,7 +1,7 @@
 """
 管理后台视图
 """
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, send_file
 from flask_login import login_required, current_user
 from functools import wraps
 from datetime import datetime
@@ -16,6 +16,12 @@ from app.models.theme import Theme
 from app.models.setting import SettingManager
 from app.services.plugin_manager import plugin_manager
 from app.services.theme_manager import theme_manager
+from app.utils import path_utils
+from app.services.backup_service import (
+    create_backup_archive,
+    restore_backup_from_zip,
+    BackupError,
+)
 from werkzeug.utils import secure_filename
 
 bp = Blueprint('admin', __name__)
@@ -694,7 +700,7 @@ def plugins():
     # 获取可安装的插件（在plugins目录下但未安装的）
     available_plugins = []
     import os
-    plugins_dir = 'plugins'
+    plugins_dir = path_utils.project_path('plugins')
     
     if os.path.exists(plugins_dir):
         for item in os.listdir(plugins_dir):
@@ -899,4 +905,56 @@ def save_settings():
         SettingManager.set(key, value, category='comment')
     
     flash('设置保存成功', 'success')
+    return redirect(url_for('admin.settings'))
+
+
+@bp.route('/settings/backup/download')
+@login_required
+@admin_required
+def download_backup():
+    """下载包含上传文件与数据库的备份包。"""
+    include_extensions = request.args.get('include_extensions') == 'true'
+    try:
+        filename, buffer = create_backup_archive(include_extensions=include_extensions)
+        # send_file 会处理流式输出，避免将文件写入磁盘
+        return send_file(
+            buffer,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=filename
+        )
+    except BackupError as exc:
+        flash(str(exc), 'error')
+    except Exception as exc:
+        current_app.logger.exception('生成备份失败: %s', exc)
+        flash('生成备份失败，请查看日志获取更多信息。', 'error')
+
+    return redirect(url_for('admin.settings'))
+
+
+@bp.route('/settings/backup/import', methods=['POST'])
+@login_required
+@admin_required
+def import_backup():
+    """导入备份并恢复数据库与上传文件。"""
+    backup_file = request.files.get('backup_file')
+    restore_extensions = request.form.get('restore_extensions') == 'true'
+    overwrite_extensions = request.form.get('overwrite_extensions') == 'true'
+
+    try:
+        restore_backup_from_zip(
+            backup_file, 
+            restore_extensions=restore_extensions, 
+            overwrite_extensions=overwrite_extensions
+        )
+        if restore_extensions:
+            flash('备份导入成功！数据已恢复。如果备份包含插件，请重启应用使插件完全生效。', 'success')
+        else:
+            flash('备份导入成功，系统数据已恢复。', 'success')
+    except BackupError as exc:
+        flash(str(exc), 'error')
+    except Exception as exc:
+        current_app.logger.exception('导入备份失败: %s', exc)
+        flash('导入备份失败，请查看日志获取更多信息。', 'error')
+
     return redirect(url_for('admin.settings'))

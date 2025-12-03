@@ -10,6 +10,7 @@ from typing import Dict, List, Any, Callable
 from flask import current_app
 from app import db
 from app.models.plugin import Plugin, PluginHook
+from app.utils import path_utils
 
 def hook(hook_name: str, priority: int = 10):
     """动作钩子装饰器"""
@@ -54,7 +55,7 @@ class PluginManager:
     
     def discover_plugins(self):
         """发现插件（仅扫描，不自动注册）"""
-        plugins_dir = os.path.join(os.getcwd(), 'plugins')
+        plugins_dir = path_utils.project_path('plugins')
         
         if not os.path.exists(plugins_dir):
             os.makedirs(plugins_dir)
@@ -63,6 +64,16 @@ class PluginManager:
         # 只扫描插件目录，不自动注册到数据库
         # 插件注册将在用户点击安装时进行
         pass
+
+    def reload_runtime_state(self):
+        """Unload all in-memory plugin state and reload currently active plugins."""
+        # 清理钩子和已加载插件，避免重复注册
+        self.hooks.clear()
+        self.plugins.clear()
+        self.plugin_modules.clear()
+
+        # 重新加载激活的插件列表
+        self.load_active_plugins()
     
     def _register_plugin(self, plugin_name: str, plugin_path: str):
         """注册插件到数据库"""
@@ -126,7 +137,7 @@ class PluginManager:
         try:
             # 使用插件目录作为包路径进行导入
             # 这样可以正确处理相对导入
-            plugins_dir = os.path.join(os.getcwd(), 'plugins')
+            plugins_dir = path_utils.project_path('plugins')
             if plugins_dir not in sys.path:
                 sys.path.insert(0, plugins_dir)
             
@@ -164,6 +175,14 @@ class PluginManager:
                 
                 # 自动注册通过装饰器定义的钩子
                 self._register_decorated_hooks(plugin_instance)
+                
+                # 调用插件的 register_hooks 方法（如果存在）
+                if hasattr(plugin_instance, 'register_hooks') and callable(plugin_instance.register_hooks):
+                    try:
+                        plugin_instance.register_hooks()
+                        current_app.logger.info(f"插件 {plugin.name} 钩子注册成功")
+                    except Exception as hook_error:
+                        current_app.logger.error(f"插件 {plugin.name} 注册钩子失败: {hook_error}")
                 
                 # 注册插件的蓝图
                 self._register_plugin_blueprints(module, plugin.name)
@@ -218,6 +237,8 @@ class PluginManager:
                     if is_blueprint_instance:
                         # 这是一个蓝图实例
                         blueprint = obj
+                        if blueprint.name in self.app.blueprints:
+                            continue
                         # 延迟注册蓝图，避免在注册时触发路由函数中的current_app访问
                         try:
                             self.app.register_blueprint(blueprint)
@@ -235,6 +256,8 @@ class PluginManager:
                                 hasattr(obj, 'url_prefix')):
                                 # 这是一个Flask Blueprint类
                                 blueprint = obj()
+                                if blueprint.name in self.app.blueprints:
+                                    continue
                                 if hasattr(blueprint, 'register'):
                                     self.app.register_blueprint(blueprint)
                                     self.app.logger.info(f"插件 {plugin_name} 蓝图类 {name} 注册成功")
@@ -444,7 +467,7 @@ class PluginManager:
                 return False
             
             # 注册插件到数据库
-            plugins_dir = os.path.join(os.getcwd(), 'plugins')
+            plugins_dir = path_utils.project_path('plugins')
             plugin_path = os.path.join(plugins_dir, plugin_name)
             
             if not os.path.exists(plugin_path):
@@ -547,6 +570,8 @@ class PluginBase:
         self.version = "1.0.0"
         self.description = ""
         self.author = ""
+        self._registered_hooks = []
+        self._registered_filters = []
     
     def activate(self):
         """插件激活时调用"""
@@ -556,17 +581,49 @@ class PluginBase:
         """插件停用时调用"""
         pass
     
-    def get_config(self):
+    def register_hooks(self):
+        """注册插件钩子，子类可重写此方法"""
+        pass
+    
+    def get_registered_hooks(self):
+        """获取已注册的钩子列表"""
+        return self._registered_hooks
+    
+    def get_registered_filters(self):
+        """获取已注册的过滤器列表"""
+        return self._registered_filters
+    
+    def get_config(self, key=None, default=None):
         """获取插件配置"""
         from app.models.plugin import Plugin
         plugin = Plugin.query.filter_by(name=self.name).first()
         if plugin:
-            return plugin.get_config()
-        return {}
+            config = plugin.get_config()
+            if key is not None:
+                return config.get(key, default)
+            return config
+        return default if key is not None else {}
     
-    def set_config(self, config_dict):
+    def set_config(self, config_dict_or_key, value=None):
         """设置插件配置"""
         from app.models.plugin import Plugin
         plugin = Plugin.query.filter_by(name=self.name).first()
         if plugin:
-            plugin.set_config(config_dict)
+            if value is not None:
+                # 设置单个配置项
+                config = plugin.get_config()
+                config[config_dict_or_key] = value
+                plugin.set_config(config)
+            else:
+                # 设置整个配置字典
+                plugin.set_config(config_dict_or_key)
+    
+    def remove_config(self, key):
+        """删除插件配置项"""
+        from app.models.plugin import Plugin
+        plugin = Plugin.query.filter_by(name=self.name).first()
+        if plugin:
+            config = plugin.get_config()
+            if key in config:
+                del config[key]
+                plugin.set_config(config)

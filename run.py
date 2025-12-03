@@ -12,9 +12,10 @@ from app import create_app, db
 from app.models.user import User
 from app.models.setting import Setting
 
-# 如果命令是 init，则在创建 app 前临时设置环境变量以跳过插件/主题加载，
+# 如果命令是 init 或 full-init，则在创建 app 前临时设置环境变量以跳过插件/主题加载，
 # 避免在首次创建数据库表时访问尚不存在的插件/主题表导致错误。
-if len(sys.argv) > 1 and sys.argv[1] == 'init':
+_INIT_COMMANDS = {'init', 'full-init'}
+if len(sys.argv) > 1 and sys.argv[1] in _INIT_COMMANDS:
     os.environ.setdefault('SKIP_PLUGIN_INIT', '1')
 
 app = create_app()
@@ -35,25 +36,49 @@ def run(host, port, debug):
     app.run(host=host, port=port, debug=debug)
 
 
+def _bootstrap_database(drop_existing: bool = False):
+    """Create (or recreate) core tables, default settings, and admin."""
+    if drop_existing:
+        click.echo('→ 正在删除现有数据库表...')
+        db.drop_all()
+        db.session.commit()
+        click.echo('✓ 数据库表已全部删除')
+
+    click.echo('→ 正在创建数据库表...')
+    db.create_all()
+    click.echo('✓ 数据库表创建完成')
+
+    click.echo('→ 正在写入默认设置...')
+    init_default_settings()
+    click.echo('✓ 默认设置初始化完成')
+
+    click.echo('→ 正在创建管理员账户...')
+    create_admin_user()
+    click.echo('✓ 管理员用户创建完成')
+
+
 @cli.command()
 def init():
-    """初始化应用"""
-    click.echo('正在初始化Noteblog...')
-    
-    # 创建数据库表
+    """初始化应用（保留现有数据）"""
+    click.echo('正在初始化 Noteblog...')
     with app.app_context():
-        db.create_all()
-        click.echo('✓ 数据库表创建完成')
-        
-        # 初始化默认设置
-        init_default_settings()
-        click.echo('✓ 默认设置初始化完成')
-        
-        # 创建管理员用户
-        create_admin_user()
-        click.echo('✓ 管理员用户创建完成')
-    
-    click.echo('🎉 Noteblog初始化完成！')
+        _bootstrap_database(drop_existing=False)
+    click.echo('🎉 Noteblog 初始化完成！')
+
+
+@cli.command('full-init')
+@click.option('--force', is_flag=True, help='无需确认直接执行完全初始化（会删除所有数据）')
+def full_init(force):
+    """完全初始化：删除所有数据并重建系统。"""
+    warning = '⚠️ 该操作会删除所有现有数据，是否继续?'
+    if not force and not click.confirm(warning):
+        click.echo('操作已取消。')
+        return
+
+    click.echo('正在执行完全初始化...')
+    with app.app_context():
+        _bootstrap_database(drop_existing=True)
+    click.echo('🎉 完全初始化完成，系统已恢复出厂状态。')
 
 
 @cli.command()

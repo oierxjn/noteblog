@@ -4,6 +4,7 @@
 from datetime import datetime
 import json
 from app import db
+from app.utils import path_utils
 
 class Plugin(db.Model):
     """插件模型"""
@@ -23,7 +24,7 @@ class Plugin(db.Model):
     # 插件状态
     is_active = db.Column(db.Boolean, default=False)
     is_system = db.Column(db.Boolean, default=False)  # 是否为系统插件
-    install_path = db.Column(db.String(255), nullable=False)  # 插件安装路径
+    _install_path = db.Column('install_path', db.String(255), nullable=False)  # 插件安装路径
     
     # 配置信息
     config_schema = db.Column(db.Text, nullable=True)  # JSON格式的配置模式
@@ -41,6 +42,20 @@ class Plugin(db.Model):
         self.install_path = install_path
         for key, value in kwargs.items():
             setattr(self, key, value)
+    
+    @property
+    def install_path(self):
+        """Absolute path to the plugin directory on the current machine."""
+        return path_utils.to_absolute_project_path(self._install_path)
+
+    @install_path.setter
+    def install_path(self, value):
+        self._install_path = path_utils.to_project_relative_path(value) or value
+
+    @property
+    def install_path_relative(self):
+        """Return the stored relative path without expanding it."""
+        return self._install_path
     
     def activate(self):
         """激活插件"""
@@ -123,7 +138,7 @@ class Plugin(db.Model):
             'max_noteblog_version': self.max_noteblog_version,
             'is_active': self.is_active,
             'is_system': self.is_system,
-            'install_path': self.install_path,
+            'install_path': self.install_path_relative,
             'has_config': self.has_config(),
             'config': self.get_config(),
             'config_schema': self.get_config_schema(),
