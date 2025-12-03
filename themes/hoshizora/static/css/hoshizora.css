@@ -66,6 +66,59 @@ body.hoshizora-body {
     z-index: 1;
 }
 
+.hoshi-aurora {
+    position: fixed;
+    inset: -20% -10% auto -10%;
+    height: 60vh;
+    z-index: 1;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    filter: blur(10px);
+    mix-blend-mode: screen;
+}
+
+.hoshi-aurora span {
+    width: 30%;
+    border-radius: 999px;
+    background: linear-gradient(120deg, rgba(141, 107, 255, 0.45), rgba(111, 244, 255, 0.25));
+    opacity: 0.6;
+    animation: aurora-shift 14s ease-in-out infinite alternate;
+}
+
+.hoshi-aurora span:nth-child(2) {
+    animation-duration: 18s;
+    background: linear-gradient(120deg, rgba(255, 139, 213, 0.45), rgba(141, 107, 255, 0.25));
+}
+
+.hoshi-aurora span:nth-child(3) {
+    animation-duration: 16s;
+    background: linear-gradient(120deg, rgba(111, 244, 255, 0.35), rgba(6, 11, 32, 0.65));
+}
+
+.hoshi-orbs {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.hoshi-orb {
+    position: absolute;
+    display: block;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 68%);
+    filter: blur(6px);
+    animation: float-slow 18s ease-in-out infinite;
+}
+
+.hoshi-orb.orb-one { top: 10%; left: 8%; animation-delay: 0s; }
+.hoshi-orb.orb-two { bottom: 15%; right: 12%; animation-delay: 5s; }
+.hoshi-orb.orb-three { top: 35%; right: 30%; animation-delay: 9s; width: 160px; height: 160px; }
+
 .hoshi-app {
     position: relative;
     z-index: 2;
@@ -122,19 +175,38 @@ body.hoshizora-body {
 }
 
 .hoshi-nav a {
+    position: relative;
     color: var(--hoshi-text-muted);
     text-decoration: none;
-    padding: 0.35rem 0.75rem;
+    padding: 0.45rem 1rem;
     border-radius: 999px;
-    transition: all 0.2s ease;
     font-size: 0.95rem;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.08em;
+    overflow: hidden;
+    transition: color 0.2s ease;
+}
+
+.hoshi-nav a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(120deg, rgba(141, 107, 255, 0.35), rgba(255, 139, 213, 0.35));
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: -1;
 }
 
 .hoshi-nav a.active,
 .hoshi-nav a:hover {
-    color: var(--hoshi-text);
-    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.hoshi-nav a.active::after,
+.hoshi-nav a:hover::after {
+    opacity: 0.9;
+    transform: scale(1);
 }
 
 .hoshi-actions {
@@ -145,13 +217,41 @@ body.hoshizora-body {
 
 .hoshi-user-chip {
     position: relative;
-    padding: 0.4rem 0.9rem;
+    display: inline-flex;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.12);
-    cursor: pointer;
     font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.hoshi-user-chip summary {
+    margin: 0;
+    padding: 0.35rem 0.9rem;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+}
+
+.hoshi-user-chip summary::-webkit-details-marker { display: none; }
+
+.hoshi-user-initial {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.2);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+}
+
+.hoshi-user-name {
+    font-size: 0.9rem;
+    color: var(--hoshi-text);
+}
+
+.hoshi-user-chip[open] .hoshi-user-menu,
 .hoshi-user-chip:hover .hoshi-user-menu,
 .hoshi-user-chip:focus-within .hoshi-user-menu {
     opacity: 1;
@@ -159,6 +259,319 @@ body.hoshizora-body {
     transform: translate(-50%, 0);
 }
 
+.hoshi-icon-btn,
+.hoshi-ghost-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--hoshi-text);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hoshi-ghost-btn {
+    padding: 0 1.25rem;
+    width: auto;
+    font-weight: 600;
+}
+
+.hoshi-icon-btn:hover,
+.hoshi-ghost-btn:hover {
+    border-color: var(--hoshi-primary);
+    color: white;
+    background: linear-gradient(120deg, var(--hoshi-primary), var(--hoshi-secondary));
+}
+
+.hoshi-mobile-toggle {
+    display: none;
+    width: 42px;
+    height: 42px;
+}
+
+.hoshi-hero {
+    max-width: 1200px;
+    margin: 2.5rem auto 0;
+    padding: clamp(2rem, 4vw, 3rem);
+    border-radius: var(--hoshi-radius-lg);
+    background: linear-gradient(135deg, rgba(141, 107, 255, 0.32), rgba(6, 7, 20, 0.88));
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: var(--hoshi-shadow-soft);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: clamp(1.5rem, 2vw, 2.5rem);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.hoshi-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.15), transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(111, 244, 255, 0.12), transparent 45%);
+    opacity: 0.9;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+
+.hoshi-hero-visual {
+    position: relative;
+    min-height: 320px;
+    border-radius: var(--hoshi-radius-md);
+    background: radial-gradient(circle at 30% 20%, rgba(111, 244, 255, 0.35), transparent 55%),
+                radial-gradient(circle at 70% 70%, rgba(255, 139, 213, 0.45), transparent 65%),
+                rgba(8, 10, 20, 0.9);
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 20px 60px rgba(4, 5, 9, 0.7);
+}
+
+.hoshi-hero-orbit {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    animation: orbit-rotate 28s linear infinite;
+    pointer-events: none;
+}
+
+.hoshi-hero-orbit.orbit-one { width: 220px; height: 220px; }
+.hoshi-hero-orbit.orbit-two { width: 300px; height: 300px; border-width: 0.5px; opacity: 0.7; animation-duration: 36s; }
+.hoshi-hero-orbit.orbit-three { width: 150px; height: 150px; border-style: dashed; animation-duration: 24s; border-color: rgba(255, 255, 255, 0.4); }
+
+.hoshi-hero-glow {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.25), transparent 55%);
+    filter: blur(0px);
+    animation: glow-pulse 4s ease-in-out infinite;
+}
+
+.hoshi-hero-core {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    display: grid;
+    place-items: center;
+    font-size: clamp(3rem, 5vw, 4.5rem);
+    color: var(--hoshi-secondary);
+    letter-spacing: 0.1em;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 70%);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.hoshi-hero-constellation {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    gap: 1.5rem;
+    padding: 2rem;
+}
+
+.hoshi-hero-constellation span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+    animation: twinkle 3s ease-in-out infinite;
+}
+
+.hoshi-hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.hoshi-hero-sup {
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.hoshi-hero-title {
+    margin: 0;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    line-height: 1.15;
+    color: white;
+}
+
+.hoshi-hero-desc {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 48ch;
+}
+
+.hoshi-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 1.2rem;
+}
+
+.hoshi-pill-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 0.85rem 1.85rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.hoshi-pill-btn:hover {
+    transform: translateY(-1px) scale(1.01);
+}
+
+.hoshi-pill-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(255, 255, 255, 0.3), transparent, rgba(255, 255, 255, 0.3));
+    mix-blend-mode: screen;
+    opacity: 0;
+    transform: translateX(-30%);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.hoshi-pill-btn:hover::after {
+    opacity: 1;
+    transform: translateX(30%);
+}
+
+.hoshi-pill-btn.primary {
+    background: linear-gradient(120deg, var(--hoshi-primary), var(--hoshi-secondary));
+    box-shadow: 0 15px 40px rgba(141, 107, 255, 0.3);
+}
+
+.hoshi-pill-btn.secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+}
+
+.hoshi-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.hoshi-feature-grid {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    z-index: 2;
+    position: relative;
+}
+
+.hoshi-feature-card {
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--hoshi-radius-md);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: var(--hoshi-shadow-card);
+    backdrop-filter: blur(16px);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.hoshi-feature-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, rgba(141, 107, 255, 0.18), transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.hoshi-feature-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.hoshi-feature-card:hover::after {
+    opacity: 1;
+}
+
+.hoshi-feature-badge {
+    display: inline-flex;
+    padding: 0.25rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.75rem;
+}
+
+.hoshi-feature-card h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1.25rem;
+    color: #fff;
+}
+
+.hoshi-feature-card p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+@keyframes orbit-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes glow-pulse {
+    0%, 100% { transform: scale(0.85); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.4; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-4px); }
+}
+
+@keyframes aurora-shift {
+    0% { transform: translateY(0) skewX(-8deg); opacity: 0.6; }
+    50% { transform: translateY(-20px) skewX(-2deg); opacity: 0.9; }
+    100% { transform: translateY(10px) skewX(-10deg); opacity: 0.5; }
+}
+
+@keyframes float-slow {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(20px, -30px, 0) scale(1.05); }
+    100% { transform: translate3d(-15px, 15px, 0) scale(0.95); }
+}
+
+@keyframes fade-overlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
 .hoshi-user-menu {
     position: absolute;
     top: calc(100% + 8px);
@@ -220,151 +633,6 @@ body.hoshizora-body {
     height: 42px;
 }
 
-.hoshi-hero {
-    max-width: 1200px;
-    margin: 2.5rem auto 0;
-    padding: 2.5rem clamp(1.5rem, 4vw, 3rem);
-    border-radius: var(--hoshi-radius-lg);
-    background: linear-gradient(120deg, rgba(141, 107, 255, 0.25), rgba(255, 139, 213, 0.25));
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: var(--hoshi-shadow-soft);
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 2.5rem;
-    position: relative;
-    overflow: hidden;
-    transform: translate(var(--parallax-x, 0), var(--parallax-y, 0));
-}
-
-.hoshi-hero::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg width='160' height='160' viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 80h140M80 10v140' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='1'/%3E%3C/svg%3E");
-    opacity: 0.8;
-    pointer-events: none;
-}
-
-.hoshi-hero-left {
-    position: relative;
-    z-index: 2;
-}
-
-.hoshi-hero-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.9rem;
-    border-radius: 999px;
-    background: rgba(12, 14, 25, 0.6);
-    color: white;
-    font-size: 0.85rem;
-    letter-spacing: 0.05em;
-}
-
-.hoshi-hero-title {
-    margin: 1rem 0 0.25rem;
-    font-size: clamp(2.1rem, 6vw, 3.5rem);
-    line-height: 1.1;
-    color: white;
-}
-
-.hoshi-hero-desc {
-    color: #e6defd;
-    font-size: 1.05rem;
-    max-width: 36ch;
-}
-
-.hoshi-hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-}
-
-.hoshi-pill-btn {
-    border: none;
-    border-radius: 999px;
-    padding: 0.85rem 1.85rem;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    color: white;
-}
-
-.hoshi-pill-btn.primary {
-    background: linear-gradient(120deg, var(--hoshi-primary), var(--hoshi-secondary));
-    box-shadow: 0 10px 30px rgba(141, 107, 255, 0.35);
-}
-
-.hoshi-pill-btn.secondary {
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.hoshi-pill-btn:hover {
-    transform: translateY(-1px) scale(1.01);
-}
-
-.hoshi-hero-right {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.hoshi-chibi-card {
-    width: min(320px, 90%);
-    padding: 1.5rem;
-    border-radius: var(--hoshi-radius-md);
-    background: rgba(12, 14, 25, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    text-align: center;
-    color: white;
-    box-shadow: var(--hoshi-shadow-soft);
-}
-
-.hoshi-chibi-card .avatar {
-    width: 160px;
-    height: 160px;
-    margin: 0 auto 1rem;
-    border-radius: 50%;
-    border: 4px double rgba(255, 255, 255, 0.4);
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.05));
-    display: grid;
-    place-items: center;
-    font-size: 2.75rem;
-    color: var(--hoshi-primary);
-}
-
-.hoshi-chibi-card h4 {
-    margin: 0.5rem 0 0;
-    font-size: 1.2rem;
-    letter-spacing: 0.08em;
-}
-
-.hoshi-chibi-card p {
-    margin: 0.25rem 0 1rem;
-    font-size: 0.9rem;
-    color: #d6c7ff;
-}
-
-.hoshi-chibi-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: center;
-}
-
-.hoshi-chibi-tags span {
-    padding: 0.25rem 0.75rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
-    font-size: 0.8rem;
-}
-
 .hoshi-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -402,10 +670,25 @@ body.hoshizora-body {
 .hoshi-card,
 .hoshi-widget {
     border-radius: var(--hoshi-radius-md);
-    background: var(--hoshi-surface);
-    border: 1px solid var(--hoshi-border);
-    box-shadow: var(--hoshi-shadow-card);
+    background: rgba(8, 10, 20, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 50px rgba(5, 7, 20, 0.35);
+    backdrop-filter: blur(12px);
     padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hoshi-card::before,
+.hoshi-widget::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(140deg, rgba(141, 107, 255, 0.25), rgba(111, 244, 255, 0.15));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
 }
 
 .hoshi-feed {
@@ -433,7 +716,17 @@ body.hoshizora-body {
     opacity: 1;
 }
 
+.hoshi-card:hover::before,
+.hoshi-widget:hover::before {
+    opacity: 1;
+}
+
 .hoshi-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.hoshi-widget > * {
     position: relative;
     z-index: 1;
 }
@@ -505,13 +798,13 @@ body.hoshizora-body {
 
 .hoshi-tag-pill {
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
     padding: 0.35rem 0.9rem;
     font-size: 0.85rem;
     color: var(--hoshi-text);
     text-decoration: none;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: transform 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .hoshi-tag-pill:hover {
@@ -567,10 +860,22 @@ body.hoshizora-body {
 
 .hoshi-widget-title {
     margin: 0 0 1rem;
-    font-size: 1rem;
-    letter-spacing: 0.1em;
+    font-size: 0.85rem;
+    letter-spacing: 0.4em;
     text-transform: uppercase;
-    color: var(--hoshi-text-muted);
+    color: rgba(255, 255, 255, 0.6);
+    position: relative;
+    padding-bottom: 0.6rem;
+}
+
+.hoshi-widget-title::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 48px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--hoshi-primary), transparent);
 }
 
 .hoshi-profile-card {
@@ -612,7 +917,14 @@ body.hoshizora-body {
     align-items: center;
     padding: 0.45rem 0.75rem;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.hoshi-list li a:hover {
+    transform: translateX(4px);
+    border-color: rgba(255, 255, 255, 0.18);
 }
 
 .hoshi-footer {
@@ -735,19 +1047,59 @@ body.hoshizora-body {
     display: flex;
 }
 
+.hoshi-modal,
+.hoshi-auth-modal {
+    animation: fade-overlay 0.4s ease;
+}
+
+.hoshi-modal {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at top, rgba(11, 14, 25, 0.9), rgba(5, 6, 12, 0.92));
+    backdrop-filter: blur(18px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 21;
+}
+
+.hoshi-modal.active {
+    display: flex;
+}
+
 .hoshi-modal-card {
-    width: min(420px, 92%);
+    width: min(480px, 92%);
     border-radius: var(--hoshi-radius-md);
-    background: var(--hoshi-surface);
-    border: 1px solid var(--hoshi-border);
+    background: rgba(10, 12, 24, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 2rem;
-    box-shadow: var(--hoshi-shadow-card);
+    box-shadow: 0 25px 80px rgba(3, 4, 12, 0.65);
+    position: relative;
+    overflow: hidden;
 }
 
 .hoshi-modal-card form {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+}
+
+.hoshi-modal-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(140deg, rgba(141, 107, 255, 0.15), rgba(111, 244, 255, 0.08));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.hoshi-modal-card:hover::before {
+    opacity: 1;
+}
+
+.hoshi-modal-card > * {
+    position: relative;
+    z-index: 1;
 }
 
 .hoshi-input {
@@ -763,6 +1115,92 @@ body.hoshizora-body {
     align-items: center;
     gap: 0.4rem;
     font-size: 0.9rem;
+}
+
+.hoshi-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.hoshi-modal-label {
+    margin: 0;
+    font-size: 0.7rem;
+    letter-spacing: 0.4em;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+}
+
+.hoshi-modal-header h3 {
+    margin: 0.2rem 0 0;
+}
+
+.hoshi-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.hoshi-password-meter {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hoshi-password-meter-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(120deg, #ff8bd5, #8d6bff);
+    transition: width 0.3s ease, background 0.3s ease;
+}
+
+.hoshi-password-meter[data-strength="none"] .hoshi-password-meter-bar {
+    width: 0%;
+    background: linear-gradient(120deg, #ff8bd5, #8d6bff);
+}
+
+.hoshi-password-meter[data-strength="weak"] .hoshi-password-meter-bar {
+    width: 33%;
+    background: linear-gradient(120deg, #ff6b6b, #ff8bd5);
+}
+
+.hoshi-password-meter[data-strength="medium"] .hoshi-password-meter-bar {
+    width: 66%;
+    background: linear-gradient(120deg, #f9c846, #ff8bd5);
+}
+
+.hoshi-password-meter[data-strength="strong"] .hoshi-password-meter-bar {
+    width: 100%;
+    background: linear-gradient(120deg, #6ff4ff, #8dffb2);
+}
+
+.hoshi-password-meter span {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.hoshi-password-hint {
+    min-height: 1rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0.25rem 0 0;
+}
+
+.hoshi-password-hint[data-state="match"] {
+    color: var(--hoshi-accent);
+}
+
+.hoshi-password-hint[data-state="mismatch"] {
+    color: var(--hoshi-secondary);
 }
 
 .hoshi-admin-layout {
@@ -816,6 +1254,23 @@ body.hoshizora-body {
     font-size: 1.02rem;
     line-height: 1.8;
     color: var(--hoshi-text);
+}
+
+.hoshi-article .katex-display {
+    margin: 1.5rem auto;
+    padding: 1rem;
+    border-radius: var(--hoshi-radius-md);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-x: auto;
+}
+
+.hoshi-article .katex-display > .katex {
+    display: inline-block;
+}
+
+.hoshi-article .katex {
+    color: inherit;
 }
 
 .hoshi-article h1,

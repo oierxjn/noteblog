@@ -81,6 +81,12 @@
       "label": "启用背景粒子",
       "default": true
     },
+    "enable_math": {
+      "type": "checkbox",
+      "label": "启用公式渲染 (KaTeX)",
+      "description": "支持 $...$ 与 $$...$$ 语法",
+      "default": true
+    },
     "default_mode": {
       "type": "select",
       "label": "默认配色模式",

@@ -15,6 +15,10 @@
   const authToggles = doc.querySelectorAll('[data-hoshi-auth-toggle]');
   const authModal = doc.querySelector('[data-hoshi-auth-modal]');
   const authClose = doc.querySelectorAll('[data-hoshi-auth-close]');
+  const modalTriggers = doc.querySelectorAll('[data-hoshi-modal-trigger]');
+  const modals = doc.querySelectorAll('[data-hoshi-modal]');
+  const modalCloseButtons = doc.querySelectorAll('[data-hoshi-modal-close]');
+  const passwordForms = doc.querySelectorAll('[data-hoshi-change-password-form]');
   const particleCanvas = doc.querySelector('[data-hoshi-particles]');
   const commentForm = doc.querySelector('.hoshi-comment-form');
 
@@ -79,6 +83,30 @@
     authModal.classList.remove('active');
   }
 
+  function closeAllModals() {
+    modals.forEach((modal) => {
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+  }
+
+  function openModal(id) {
+    if (!id) return;
+    const target = doc.querySelector(`[data-hoshi-modal="${id}"]`);
+    if (!target) return;
+    closeAllModals();
+    target.classList.add('active');
+    target.setAttribute('aria-hidden', 'false');
+    const focusable = target.querySelector('[autofocus], input, textarea, select, button');
+    setTimeout(() => focusable && typeof focusable.focus === 'function' && focusable.focus(), 80);
+  }
+
+  function closeModal(modal) {
+    if (!modal) return;
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
   function handleScroll() {
     const scrolled = window.scrollY;
     if (backToTop) {
@@ -130,8 +158,9 @@
       if (evt.key === 'Escape') {
         closeSearch();
         closeAuth();
+        closeAllModals();
       }
-      if (evt.key.toLowerCase() === 'k' && evt.metaKey || evt.ctrlKey && evt.key.toLowerCase() === 'k') {
+      if ((evt.metaKey || evt.ctrlKey) && evt.key.toLowerCase() === 'k') {
         evt.preventDefault();
         openSearch();
       }
@@ -153,6 +182,88 @@
         if (evt.target === authModal) closeAuth();
       });
     }
+  }
+
+  function bindModals() {
+    modalTriggers.forEach((trigger) => {
+      if (trigger.dataset.modalBound) return;
+      trigger.dataset.modalBound = '1';
+      trigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        closeAuth();
+        openModal(trigger.dataset.hoshiModalTrigger);
+      });
+    });
+    modalCloseButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const host = button.closest('[data-hoshi-modal]');
+        closeModal(host);
+      });
+    });
+    modals.forEach((modal) => {
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+          closeModal(modal);
+        }
+      });
+    });
+  }
+
+  function evaluatePasswordStrength(value) {
+    if (!value) {
+      return { strength: 'none', label: '-' };
+    }
+    let score = 0;
+    if (value.length >= 8) score += 1;
+    if (/[A-Z]/.test(value)) score += 1;
+    if (/[0-9]/.test(value)) score += 1;
+    if (/[^A-Za-z0-9]/.test(value)) score += 1;
+    if (value.length >= 14) score += 1;
+
+    if (score >= 4) return { strength: 'strong', label: '强' };
+    if (score >= 2) return { strength: 'medium', label: '中' };
+    return { strength: 'weak', label: '弱' };
+  }
+
+  function bindPasswordStrength() {
+    passwordForms.forEach((form) => {
+      const newPassword = form.querySelector('input[name="new_password"]');
+      const confirmPassword = form.querySelector('input[name="confirm_password"]');
+      const meter = form.querySelector('[data-hoshi-password-meter]');
+      const label = form.querySelector('[data-hoshi-password-label]');
+      const matchHint = form.querySelector('[data-hoshi-password-match]');
+      if (!newPassword || !meter || !label) return;
+
+      const updateStrength = () => {
+        const { strength, label: text } = evaluatePasswordStrength(newPassword.value.trim());
+        meter.dataset.strength = strength;
+        label.textContent = `强度：${text}`;
+      };
+
+      const updateMatch = () => {
+        if (!matchHint || !confirmPassword) return;
+        if (!confirmPassword.value) {
+          matchHint.textContent = '请再次输入以确认';
+          matchHint.dataset.state = '';
+          return;
+        }
+        if (confirmPassword.value === newPassword.value && confirmPassword.value.length >= 6) {
+          matchHint.textContent = '两次输入一致';
+          matchHint.dataset.state = 'match';
+        } else {
+          matchHint.textContent = '两次密码不一致';
+          matchHint.dataset.state = 'mismatch';
+        }
+      };
+
+      newPassword.addEventListener('input', () => {
+        updateStrength();
+        updateMatch();
+      });
+      confirmPassword?.addEventListener('input', updateMatch);
+      updateStrength();
+      updateMatch();
+    });
   }
 
   function bindThemeToggle() {
@@ -410,6 +521,8 @@
     bindCopyButtons();
     bindPostLikeButtons();
     bindCommentLikeButtons();
+    bindModals();
+    bindPasswordStrength();
     initCommentForm();
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();

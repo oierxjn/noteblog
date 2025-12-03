@@ -15,6 +15,9 @@
     {% endif %}
 
     <link rel="stylesheet" href="/themes/hoshizora/static/css/hoshizora.css">
+    {% if _theme.enable_math != false %}
+    <link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    {% endif %}
 
     <style>
         :root {
@@ -62,6 +65,16 @@
     <canvas class="hoshi-particles" data-hoshi-particles></canvas>
     {% endif %}
     <div class="hoshi-noise"></div>
+    <div class="hoshi-aurora" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="hoshi-orbs" aria-hidden="true">
+        <span class="hoshi-orb orb-one"></span>
+        <span class="hoshi-orb orb-two"></span>
+        <span class="hoshi-orb orb-three"></span>
+    </div>
 
     <div class="hoshi-app">
         <header class="hoshi-header">
@@ -97,16 +110,21 @@
                     </button>
                     {% endif %}
                     {% if current_user.is_authenticated %}
-                        <div class="hoshi-user-chip">
-                            <span>{{ (current_user.display_name or current_user.username)[:1].upper() }}</span>
+                        <details class="hoshi-user-chip">
+                            <summary>
+                                <span class="hoshi-user-initial">{{ (current_user.display_name or current_user.username)[:1].upper() }}</span>
+                                <span class="hoshi-user-name">{{ current_user.display_name or current_user.username }}</span>
+                            </summary>
                             <div class="hoshi-user-menu">
                                 <a href="/auth/profile">个人资料</a>
+                                <a href="javascript:void(0)" data-hoshi-modal-trigger="edit_profile">编辑资料</a>
+                                <a href="javascript:void(0)" data-hoshi-modal-trigger="change_password">修改密码</a>
                                 {% if current_user.is_admin %}
                                 <a href="/admin">管理后台</a>
                                 {% endif %}
                                 <a href="/auth/logout">退出登录</a>
                             </div>
-                        </div>
+                        </details>
                     {% else %}
                         <button class="hoshi-ghost-btn" type="button" data-hoshi-auth-toggle="login">登录</button>
                     {% endif %}
@@ -114,15 +132,62 @@
             </div>
         </header>
 
+        {% set _hero_features = [
+            {
+                'title': _theme.hero_feature_title_1 or '星际灵动',
+                'description': _theme.hero_feature_desc_1 or '多层渐变与柔光阴影交织，呈现如夜空般深邃的视觉质感。',
+                'badge': _theme.hero_feature_badge_1 or 'Design'
+            },
+            {
+                'title': _theme.hero_feature_title_2 or '光辉节奏',
+                'description': _theme.hero_feature_desc_2 or '粒子与轨道动画带来灵动节奏，让页面每次滚动都像穿过星云。',
+                'badge': _theme.hero_feature_badge_2 or 'Motion'
+            },
+            {
+                'title': _theme.hero_feature_title_3 or '共鸣空间',
+                'description': _theme.hero_feature_desc_3 or '透明卡片搭配玻璃质感边框，内容层次清晰，阅读体验如临星舰舱。',
+                'badge': _theme.hero_feature_badge_3 or 'UX'
+            }
+        ] %}
         {% block hero %}
         <section class="hoshi-hero">
-            <div class="hoshi-hero-left">
-                <h2 class="hoshi-hero-title">{{ _theme.hero_character_name or site_title or 'Noteblog' }}</h2>
-                <p class="hoshi-hero-desc">{{ _theme.hero_tagline or site_description or '欢迎来到我的博客' }}</p>
-                <div class="hoshi-hero-actions">
-                    <a class="hoshi-pill-btn primary" href="{{ _theme.hero_cta_link or '/archives' }}">{{ _theme.hero_cta_text or '查看文章' }}</a>
+            <div class="hoshi-hero-visual">
+                <div class="hoshi-hero-orbit orbit-one"></div>
+                <div class="hoshi-hero-orbit orbit-two"></div>
+                <div class="hoshi-hero-orbit orbit-three"></div>
+                <div class="hoshi-hero-glow"></div>
+                <div class="hoshi-hero-core">
+                    <span>{{ (_theme.hero_character_name or site_title or 'Noteblog')[:1] }}</span>
+                </div>
+                <div class="hoshi-hero-constellation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </div>
             </div>
+            <div class="hoshi-hero-content">
+                <p class="hoshi-hero-sup">{{ _theme.hero_subtitle or '星辰绽放 · 梦想启航' }}</p>
+                <h2 class="hoshi-hero-title">{{ _theme.hero_character_name or site_title or 'Noteblog' }}</h2>
+                <p class="hoshi-hero-desc">{{ _theme.hero_tagline or site_description or '欢迎来到我的博客，这里记录灵感与代码的光辉瞬间。' }}</p>
+                <div class="hoshi-hero-actions">
+                    <a class="hoshi-pill-btn primary" href="{{ _theme.hero_cta_link or '/archives' }}">{{ _theme.hero_cta_text or '查看文章' }}</a>
+                    <a class="hoshi-pill-btn secondary" href="{{ _theme.hero_cta_secondary_link or '/about' }}">{{ _theme.hero_cta_secondary_text or '了解更多' }}</a>
+                </div>
+                <div class="hoshi-hero-meta">
+                    <span>{{ _theme.hero_meta_line_1 or '星轨编织 · 滴答光影' }}</span>
+                    <span>{{ _theme.hero_meta_line_2 or '每日更新 · 精心打磨' }}</span>
+                </div>
+            </div>
+        </section>
+        <section class="hoshi-feature-grid">
+            {% for item in _hero_features %}
+            <article class="hoshi-feature-card">
+                <span class="hoshi-feature-badge">{{ item.badge }}</span>
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.description }}</p>
+            </article>
+            {% endfor %}
         </section>
         {% endblock %}
 
@@ -224,7 +289,112 @@
 
     {% include 'auth/login.html' %}
 
+    {% if current_user.is_authenticated %}
+    <div class="hoshi-modal" data-hoshi-modal="edit_profile" aria-hidden="true">
+        <div class="hoshi-modal-card">
+            <header class="hoshi-modal-header">
+                <div>
+                    <p class="hoshi-modal-label">Profile</p>
+                    <h3>编辑资料</h3>
+                </div>
+                <button type="button" class="hoshi-icon-btn" aria-label="关闭" data-hoshi-modal-close>×</button>
+            </header>
+            <form action="{{ url_for('auth.edit_profile') }}" method="POST" enctype="multipart/form-data">
+                <label>显示名称
+                    <input class="hoshi-input" type="text" name="display_name" value="{{ current_user.display_name or current_user.username }}" autofocus>
+                </label>
+                <label>邮箱
+                    <input class="hoshi-input" type="email" name="email" value="{{ current_user.email or '' }}">
+                </label>
+                <label>个人网站
+                    <input class="hoshi-input" type="url" name="website" value="{{ current_user.website or '' }}" placeholder="https://example.com">
+                </label>
+                <label>所在地
+                    <input class="hoshi-input" type="text" name="location" value="{{ current_user.location or '' }}">
+                </label>
+                <label>简介
+                    <textarea class="hoshi-input" name="bio" rows="3">{{ current_user.bio or '' }}</textarea>
+                </label>
+                <label>头像
+                    <input class="hoshi-input" type="file" name="avatar" accept="image/png,image/jpeg,image/webp">
+                </label>
+                <div class="hoshi-modal-actions">
+                    <button type="button" class="hoshi-ghost-btn" data-hoshi-modal-close>取消</button>
+                    <button type="submit" class="hoshi-pill-btn primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="hoshi-modal" data-hoshi-modal="change_password" aria-hidden="true">
+        <div class="hoshi-modal-card">
+            <header class="hoshi-modal-header">
+                <div>
+                    <p class="hoshi-modal-label">Security</p>
+                    <h3>修改密码</h3>
+                </div>
+                <button type="button" class="hoshi-icon-btn" aria-label="关闭" data-hoshi-modal-close>×</button>
+            </header>
+            <form action="{{ url_for('auth.change_password') }}" method="POST" data-hoshi-change-password-form>
+                <label>当前密码
+                    <input class="hoshi-input" type="password" name="current_password" autocomplete="current-password" required autofocus>
+                </label>
+                <label>新密码
+                    <input class="hoshi-input" type="password" name="new_password" minlength="6" autocomplete="new-password" required>
+                </label>
+                <label>确认新密码
+                    <input class="hoshi-input" type="password" name="confirm_password" minlength="6" autocomplete="new-password" required>
+                </label>
+                <div class="hoshi-password-meter" data-hoshi-password-meter>
+                    <div class="hoshi-password-meter-bar" data-hoshi-password-bar></div>
+                    <span data-hoshi-password-label>强度：-</span>
+                </div>
+                <p class="hoshi-password-hint" data-hoshi-password-match></p>
+                <div class="hoshi-modal-actions">
+                    <button type="button" class="hoshi-ghost-btn" data-hoshi-modal-close>取消</button>
+                    <button type="submit" class="hoshi-pill-btn primary">修改密码</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
     <script src="/themes/hoshizora/static/js/hoshizora.js" defer></script>
+    {% if _theme.enable_math != false %}
+    <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+        (function () {
+            const options = {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false },
+                    { left: '\\[', right: '\\]', display: true },
+                    { left: '\\(', right: '\\)', display: false }
+                ],
+                throwOnError: false
+            };
+
+            function render(target) {
+                if (!window.renderMathInElement) {
+                    return;
+                }
+                window.renderMathInElement(target || document.body, options);
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                render(document.querySelector('.hoshi-main') || document.body);
+            });
+
+            window.addEventListener('hoshizora:content-updated', function (event) {
+                const root = event.detail && event.detail.root ? event.detail.root : document.querySelector('.hoshi-main') || document.body;
+                render(root);
+            });
+
+            window.hoshiRenderMath = render;
+        })();
+    </script>
+    {% endif %}
 
     {% if plugin_hooks and plugin_hooks.body_end %}
         {% for block in plugin_hooks.body_end %}
