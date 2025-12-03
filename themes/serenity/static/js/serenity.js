@@ -170,6 +170,20 @@ class SerenityTheme {
         const replyNameTarget = form.querySelector('[data-reply-name]');
         const textarea = form.querySelector('textarea[name="content"], textarea');
 
+        // autosize helper for textarea
+        const autosize = (el) => {
+            if (!el) return;
+            el.style.height = 'auto';
+            const max = Math.min(window.innerHeight * 0.6, 9999);
+            el.style.height = Math.min(el.scrollHeight, max) + 'px';
+        };
+        if (textarea) {
+            autosize(textarea);
+            textarea.addEventListener('input', () => autosize(textarea));
+            window.addEventListener('resize', () => autosize(textarea));
+            form.addEventListener('reset', () => setTimeout(() => autosize(textarea), 30));
+        }
+
         const toggleReplyInfo = (active, authorName = '') => {
             if (!replyInfo) return;
             if (active) {

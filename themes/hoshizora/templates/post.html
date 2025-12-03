@@ -70,11 +70,18 @@
     </div>
 
     <footer class="hoshi-card-footer" style="margin-top:2rem;">
-        <button class="hoshi-pill-btn secondary" type="button" data-hoshi-copy>{{ request.url }}</button>
-        <div class="hoshi-tag-row">
-            <a class="hoshi-tag-pill" href="mailto:?subject={{ post.title }}&body={{ request.url }}">分享邮件</a>
-            <button class="hoshi-tag-pill" type="button" data-hoshi-like-post data-post-id="{{ post.id }}" data-liked="{{ 'true' if post.id in liked_posts else 'false' }}">
-                ❤ 喜欢 · <span data-like-count>{{ post.like_count or 0 }}</span>
+        <!-- group three compact actions in one row: copy / share (mailto) / like -->
+        <div class="hoshi-footer-actions">
+            <button class="hoshi-pill-btn secondary hoshi-footer-btn" type="button" data-hoshi-copy title="{{ request.url }}">
+                <span class="hoshi-copy-icon" aria-hidden="true">📋</span>
+                <span class="hoshi-copy-text" title="{{ request.url }}">{{ request.url }}</span>
+            </button>
+
+            <a class="hoshi-pill-btn hoshi-footer-btn secondary" href="mailto:?subject={{ post.title }}&body={{ request.url }}" title="分享邮件">✉️ 分享</a>
+
+            <button class="hoshi-pill-btn hoshi-footer-btn hoshi-like-btn" type="button" data-hoshi-like-post data-post-id="{{ post.id }}" data-liked="{{ 'true' if post.id in liked_posts else 'false' }}">
+                <span aria-hidden="true">❤</span>
+                <span class="hoshi-like-text">喜欢 · <span data-like-count>{{ post.like_count or 0 }}</span></span>
             </button>
         </div>
     </footer>

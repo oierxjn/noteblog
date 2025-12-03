@@ -841,6 +841,16 @@ footer {
     background: transparent;
     color: var(--cg-text);
     font-family: var(--cg-font-sans);
+
+    /* make comment textarea responsive and autosize-friendly */
+    box-sizing: border-box;
+}
+
+.cg-comment-form textarea {
+    min-height: 90px;
+    max-height: 60vh;
+    overflow: auto;
+    resize: none; /* autosize via JS */
 }
 
 .comment-textarea {

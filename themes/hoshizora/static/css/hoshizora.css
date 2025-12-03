@@ -477,69 +477,7 @@ body.hoshizora-body {
     color: rgba(255, 255, 255, 0.6);
 }
 
-.hoshi-feature-grid {
-    margin-top: 2rem;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
-    z-index: 2;
-    position: relative;
-}
-
-.hoshi-feature-card {
-    padding: 1.25rem 1.5rem;
-    border-radius: var(--hoshi-radius-md);
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: var(--hoshi-shadow-card);
-    backdrop-filter: blur(16px);
-    transition: transform 0.3s ease, border-color 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.hoshi-feature-card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(160deg, rgba(141, 107, 255, 0.18), transparent);
-    opacity: 0;
-    transition: opacity 0.4s ease;
-}
-
-.hoshi-feature-card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.hoshi-feature-card:hover::after {
-    opacity: 1;
-}
-
-.hoshi-feature-badge {
-    display: inline-flex;
-    padding: 0.25rem 0.8rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    background: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 0.75rem;
-}
-
-.hoshi-feature-card h3 {
-    margin: 0 0 0.4rem;
-    font-size: 1.25rem;
-    color: #fff;
-}
-
-.hoshi-feature-card p {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.65);
-    line-height: 1.6;
-    font-size: 0.95rem;
-}
+/* feature grid removed */
 
 @keyframes orbit-rotate {
     from { transform: rotate(0deg); }
@@ -815,8 +753,81 @@ body.hoshizora-body {
 .hoshi-card-footer {
     margin-top: 1.5rem;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end; /* place action group to the right */
     align-items: center;
+}
+
+/* truncate long copyable URLs and keep button responsive */
+.hoshi-card-footer {
+    /* keep outer footer layout minimal — content sits inside .hoshi-footer-actions */
+    padding: 0.8rem 1rem;
+}
+
+.hoshi-footer-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap; /* keep three buttons on single row when space allows */
+}
+
+.hoshi-footer-actions .hoshi-footer-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.hoshi-footer-actions .hoshi-copy-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    font-size: 14px;
+}
+
+.hoshi-footer-actions .hoshi-copy-text {
+    display: inline-block;
+    max-width: 22ch; /* keep it short so other two buttons remain visible */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+@media (max-width: 680px) {
+    .hoshi-card-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.6rem;
+    }
+    .hoshi-card-footer [data-hoshi-copy] {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 0.6rem 0.8rem;
+    }
+    .hoshi-card-footer .hoshi-copy-text {
+        max-width: calc(100% - 12px);
+    }
+
+    .hoshi-footer-actions {
+        flex-wrap: wrap; /* if screen too narrow, allow them to wrap into multiple rows */
+    }
+
+    .hoshi-footer-actions .hoshi-footer-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+/* visual feedback when copied */
+.hoshi-card-footer [data-hoshi-copy][data-copied="1"],
+.hoshi-card-footer [data-hoshi-copy].copied {
+    border-color: rgba(141,107,255,0.4);
+    background: linear-gradient(120deg, rgba(141,107,255,0.06), rgba(255,139,213,0.02));
+}
 }
 
 .hoshi-readmore {
@@ -1256,6 +1267,30 @@ body.hoshizora-body {
     color: var(--hoshi-text);
 }
 
+/* Make markdown-rendered images responsive and reasonable size */
+.hoshi-article img,
+.hoshi-comment-text img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1rem auto;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(3, 6, 20, 0.45);
+    object-fit: contain;
+}
+
+.hoshi-article figure {
+    max-width: 100%;
+    margin: 1rem auto;
+    text-align: center;
+}
+
+.hoshi-article figcaption {
+    color: var(--hoshi-text-muted);
+    font-size: .92rem;
+    margin-top: 0.5rem;
+}
+
 .hoshi-article .katex-display {
     margin: 1.5rem auto;
     padding: 1rem;
@@ -1392,6 +1427,45 @@ body.hoshizora-body {
     display: flex;
     gap: 0.5rem;
     margin-top: 0.75rem;
+}
+
+/* Better looking small action buttons for comments (like / reply) */
+.hoshi-comment-actions .hoshi-ghost-btn[data-hoshi-comment-like],
+.hoshi-comment-actions .hoshi-ghost-btn[data-hoshi-reply] {
+    padding: 0.28rem 0.7rem;
+    font-size: 0.9rem;
+    border-radius: 999px;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: var(--hoshi-text-muted);
+}
+
+.hoshi-comment-actions .hoshi-ghost-btn[data-hoshi-comment-like]:hover,
+.hoshi-comment-actions .hoshi-ghost-btn[data-hoshi-reply]:hover {
+    transform: translateY(-1px);
+}
+
+/* Liked state — when comment is liked */
+.hoshi-comment-actions .hoshi-ghost-btn[data-hoshi-comment-like][data-liked="true"],
+.hoshi-comment-actions .hoshi-ghost-btn.liked {
+    background: linear-gradient(120deg, rgba(141,107,255,0.95), rgba(255,139,213,0.9));
+    color: #fff;
+    border-color: rgba(255,255,255,0.12);
+    box-shadow: 0 6px 20px rgba(30, 24, 45, 0.35);
+}
+
+/* Make comment textarea responsive and autosize-friendly */
+.hoshi-comment-form textarea.hoshi-input {
+    width: 100%;
+    min-height: 90px;
+    max-height: 60vh;
+    overflow: auto;
+    resize: none; /* we control resize via script */
+    box-sizing: border-box;
 }
 
 .hoshi-comment-children {

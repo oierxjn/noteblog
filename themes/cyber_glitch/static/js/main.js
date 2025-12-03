@@ -244,6 +244,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        // autosize helper for textarea
+        const textareaEl = form.querySelector('textarea[name="content"]');
+        const autosize = (el) => {
+            if (!el) return;
+            el.style.height = 'auto';
+            const max = Math.min(window.innerHeight * 0.6, 9999);
+            el.style.height = Math.min(el.scrollHeight, max) + 'px';
+        };
+        if (textareaEl) {
+            autosize(textareaEl);
+            textareaEl.addEventListener('input', () => autosize(textareaEl));
+            window.addEventListener('resize', () => autosize(textareaEl));
+            form.addEventListener('reset', () => setTimeout(() => autosize(textareaEl), 30));
+        }
+
         form.addEventListener('submit', (event) => {
             event.preventDefault();
             const submitBtn = form.querySelector('button[type="submit"]');

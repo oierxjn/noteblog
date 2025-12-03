@@ -296,6 +296,17 @@
             textarea.remove();
           }
           showToast('链接已复制');
+          try {
+            // add a temporary visual state on the button so user sees feedback in-place
+            btn.dataset.copied = '1';
+            btn.classList.add('copied');
+            setTimeout(() => {
+              delete btn.dataset.copied;
+              btn.classList.remove('copied');
+            }, 1600);
+          } catch (e) {
+            // ignore
+          }
         } catch (error) {
           showToast('复制失败，请手动复制', 'error');
         }
@@ -388,6 +399,30 @@
     const replyNameTarget = commentForm.querySelector('[data-reply-name]');
     const cancelBtn = commentForm.querySelector('[data-cancel-reply]');
     const textarea = commentForm.querySelector('textarea[name="content"]');
+
+    // textarea autosize helper
+    const autosize = (el) => {
+      if (!el) return;
+      // reset height to allow shrink when content deleted
+      el.style.height = 'auto';
+      // limit to a sensible max height (60vh) but keep natural scrollHeight
+      const max = Math.min(window.innerHeight * 0.6, 9999);
+      const target = Math.min(el.scrollHeight, max);
+      el.style.height = target + 'px';
+    };
+
+    // attach autosize
+    if (textarea) {
+      // initial sizing
+      autosize(textarea);
+      textarea.addEventListener('input', () => autosize(textarea));
+      // also adjust when window resizes (in case viewport changes)
+      window.addEventListener('resize', () => autosize(textarea));
+      // when the form resets (like after submit), ensure it shrinks back
+      commentForm.addEventListener('reset', () => {
+        setTimeout(() => autosize(textarea), 30);
+      });
+    }
 
     const toggleReply = (active, author) => {
       if (!indicator) return;

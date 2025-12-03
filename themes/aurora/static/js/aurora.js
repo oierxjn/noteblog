@@ -373,6 +373,20 @@ class AuroraTheme {
         const cancelReplyBtn = commentForm ? commentForm.querySelector('[data-cancel-reply]') : null;
         const parentInput = commentForm ? commentForm.querySelector('input[name="parent_id"]') : null;
         const textarea = commentForm ? commentForm.querySelector('textarea[name="content"]') : null;
+
+        // autosize helper for textarea
+        const autosize = (el) => {
+            if (!el) return;
+            el.style.height = 'auto';
+            const max = Math.min(window.innerHeight * 0.6, 9999);
+            el.style.height = Math.min(el.scrollHeight, max) + 'px';
+        };
+        if (textarea) {
+            autosize(textarea);
+            textarea.addEventListener('input', () => autosize(textarea));
+            window.addEventListener('resize', () => autosize(textarea));
+            commentForm.addEventListener('reset', () => setTimeout(() => autosize(textarea), 30));
+        }
         const formWrapper = commentForm ? commentForm.closest('.comment-form') : null;
 
         const clearReplyState = () => {
