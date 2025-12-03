@@ -22,7 +22,7 @@
         <div class="hoshi-chibi-card">
             <div class="avatar">✦</div>
             <h4>{{ post.author.display_name or post.author.username }}</h4>
-            <p>{{ post.author.bio or '旅途中的记录者' }}</p>
+            <p>{{ post.author.bio or '' }}</p>
             <div class="hoshi-chibi-tags">
                 <span>👀 {{ post.view_count or 0 }}</span>
                 {% if post.comment_count is not none %}

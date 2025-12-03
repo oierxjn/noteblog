@@ -6,8 +6,8 @@
 <section class="hoshi-card">
     <header class="hoshi-post-header">
         <span class="hoshi-meta-pill">Search</span>
-        <h1 class="hoshi-post-title">星轨检索</h1>
-        <p class="hoshi-post-excerpt">使用任意关键词唤醒相关的冒险条目。</p>
+        <h1 class="hoshi-post-title">搜索</h1>
+        <p class="hoshi-post-excerpt">输入关键词搜索文章</p>
     </header>
     <form action="{{ url_for('main.search') }}" method="GET" style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:1.5rem;">
         <input class="hoshi-input" type="text" name="q" value="{{ query or '' }}" placeholder="输入关键词..." style="flex:1;min-width:220px;">

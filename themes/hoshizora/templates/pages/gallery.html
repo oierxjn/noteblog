@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}{{ page_title or '星空相册' }} - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block title %}{{ page_title or '相册' }} - {{ site_title or 'Noteblog' }}{% endblock %}
 
 {% block content %}
 <section class="hoshi-card">
     <header class="hoshi-post-header">
         <span class="hoshi-meta-pill">Gallery</span>
-        <h1 class="hoshi-post-title">{{ page_title or '星空相册' }}</h1>
-        <p class="hoshi-post-excerpt">{{ page_description or '随手拍下的舞台幕后、草稿与灵感。' }}</p>
+        <h1 class="hoshi-post-title">{{ page_title or '相册' }}</h1>
+        <p class="hoshi-post-excerpt">{{ page_description or '图片展示' }}</p></p>
     </header>
     <div class="hoshi-gallery" style="margin-top:1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;">
         {% for shot in gallery or [] %}

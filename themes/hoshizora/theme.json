@@ -1,6 +1,6 @@
 {
-  "display_name": "星空幻奏 Hoshizora",
-  "description": "一款充满二次元能量的星空主题，融合柔和霓虹、手绘贴纸与虚拟偶像舞台感。",
+  "display_name": "星空 Hoshizora",
+  "description": "一款简洁的深色系博客主题，带有渐变色和微妙动效。",
   "version": "1.0.0",
   "author": "Noteblog Community",
   "author_website": "https://github.com/streetartist/noteblog",
@@ -26,17 +26,17 @@
     },
     "primary_color": {
       "type": "color",
-      "label": "主色 (魔法能量)",
+      "label": "主色",
       "default": "#8d6bff"
     },
     "secondary_color": {
       "type": "color",
-      "label": "副色 (霓虹描边)",
+      "label": "副色",
       "default": "#ff8bd5"
     },
     "accent_color": {
       "type": "color",
-      "label": "强调色 (星屑)",
+      "label": "强调色",
       "default": "#6ff4ff"
     },
     "gradient_direction": {
@@ -78,7 +78,7 @@
     },
     "enable_particle_field": {
       "type": "checkbox",
-      "label": "启用粒子星屑",
+      "label": "启用背景粒子",
       "default": true
     },
     "default_mode": {
@@ -89,33 +89,23 @@
     },
     "enable_dark_mode_toggle": {
       "type": "checkbox",
-      "label": "允许在前台切换深浅色",
+      "label": "允许切换深浅色",
       "default": true
     },
     "hero_tagline": {
       "type": "text",
       "label": "Hero 副标题",
-      "default": "少女与星尘，共同编织的冒险日志"
+      "default": "记录生活，分享思考"
     },
     "hero_cta_text": {
       "type": "text",
       "label": "Hero 主按钮文字",
-      "default": "开始巡航"
+      "default": "查看文章"
     },
     "hero_cta_link": {
       "type": "text",
       "label": "Hero 主按钮链接",
       "default": "/archives"
-    },
-    "hero_highlight_text": {
-      "type": "text",
-      "label": "Hero 高亮文案",
-      "default": "#GalacticLive"
-    },
-    "hero_character_name": {
-      "type": "text",
-      "label": "角色昵称",
-      "default": "星野澪"
     },
     "enable_scroll_indicator": {
       "type": "checkbox",
@@ -125,7 +115,7 @@
     "footer_text": {
       "type": "textarea",
       "label": "页脚版权",
-      "default": "© 2025 星空幻奏主题 - 记录每一次心动。"
+      "default": "© 2025 Powered by Noteblog"
     },
     "analytics_code": {
       "type": "textarea",

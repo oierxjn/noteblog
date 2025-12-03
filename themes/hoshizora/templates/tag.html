@@ -5,16 +5,9 @@
 {% block hero %}
 <section class="hoshi-hero" style="margin-top:1.5rem;">
     <div class="hoshi-hero-left">
-        <span class="hoshi-hero-tag">Tag</span>
+        <span class="hoshi-hero-tag">标签</span>
         <h1 class="hoshi-hero-title">#{{ tag.name }}</h1>
-        <p class="hoshi-hero-desc">关于 {{ tag.name }} 的所有脑内星屑。</p>
-    </div>
-    <div class="hoshi-hero-right">
-        <div class="hoshi-chibi-card">
-            <div class="avatar">#</div>
-            <h4>{{ posts.total if posts else 0 }} 篇文章</h4>
-            <p>标签别名：{{ tag.slug }}</p>
-        </div>
+        <p class="hoshi-hero-desc">共有 {{ posts.total if posts else 0 }} 篇相关文章</p>
     </div>
 </section>
 {% endblock %}

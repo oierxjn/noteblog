@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ site_title or 'Noteblog' }} · 星空幻奏{% endblock %}
+{% block title %}{{ site_title or 'Noteblog' }}{% endblock %}
 
 {% block content %}
 <section class="hoshi-feed">
@@ -10,7 +10,7 @@
         {% endfor %}
     {% else %}
         <div class="hoshi-card hoshi-empty">
-            <p>还没有文章，去后台写下第一篇冒险故事吧！</p>
+            <p>还没有文章，去后台写下第一篇吧！</p>
             <a class="hoshi-pill-btn primary" href="/admin/posts/create">立即创作</a>
         </div>
     {% endif %}

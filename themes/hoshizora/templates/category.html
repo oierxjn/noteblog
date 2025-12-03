@@ -5,20 +5,9 @@
 {% block hero %}
 <section class="hoshi-hero" style="margin-top:1.5rem;">
     <div class="hoshi-hero-left">
-        <span class="hoshi-hero-tag">Category</span>
+        <span class="hoshi-hero-tag">分类</span>
         <h1 class="hoshi-hero-title">{{ category.name }}</h1>
-        <p class="hoshi-hero-desc">{{ category.description or '该分类下的文章都闪烁着相似的星光。' }}</p>
-    </div>
-    <div class="hoshi-hero-right">
-        <div class="hoshi-chibi-card">
-            <div class="avatar">☽</div>
-            <h4>{{ posts.total if posts else 0 }} 篇记录</h4>
-            <p>最近更新：{{ (posts.items[0].published_at or posts.items[0].created_at).strftime('%Y-%m-%d') if posts and posts.items else '暂无' }}</p>
-            <div class="hoshi-chibi-tags">
-                <span>灵感</span>
-                <span>{{ category.slug }}</span>
-            </div>
-        </div>
+        <p class="hoshi-hero-desc">{{ category.description or '该分类下共有 ' ~ (posts.total if posts else 0) ~ ' 篇文章' }}</p>
     </div>
 </section>
 {% endblock %}

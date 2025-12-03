@@ -15,7 +15,7 @@ class HoshizoraThemeExtension(ThemeExtensionBase):
             theme_name="hoshizora",
             display_name="Hoshizora",
             version="1.0.0",
-            description="星空幻奏主题扩展",
+            description="Hoshizora主题扩展",
         )
         self._register_admin_blueprint()
         self._register_custom_pages()
@@ -42,8 +42,8 @@ class HoshizoraThemeExtension(ThemeExtensionBase):
                 "template": "pages/gallery.html",
                 "methods": ["GET"],
                 "context": {
-                    "page_title": "星空相册",
-                    "page_description": "收录主题插画、舞台截图与应援照",
+                    "page_title": "相册",
+                    "page_description": "图片展示",
                 },
             }
         )

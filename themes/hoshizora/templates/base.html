@@ -14,9 +14,6 @@
     <link rel="icon" type="image/png" href="{{ _theme.site_favicon }}">
     {% endif %}
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="/themes/hoshizora/static/css/hoshizora.css">
 
     <style>
@@ -76,7 +73,6 @@
                         {% endif %}
                         <span>{{ site_title or 'Noteblog' }}</span>
                     </a>
-                    <span class="hoshi-badge">{{ _theme.hero_highlight_text or '#GalacticLive' }}</span>
                 </div>
                 <button class="hoshi-icon-btn hoshi-mobile-toggle" type="button" aria-label="切换导航" data-hoshi-nav-toggle>☰</button>
                 <nav class="hoshi-nav" data-hoshi-nav>
@@ -112,7 +108,7 @@
                             </div>
                         </div>
                     {% else %}
-                        <button class="hoshi-ghost-btn" type="button" data-hoshi-auth-toggle="login">登入冒险</button>
+                        <button class="hoshi-ghost-btn" type="button" data-hoshi-auth-toggle="login">登录</button>
                     {% endif %}
                 </div>
             </div>
@@ -121,24 +117,10 @@
         {% block hero %}
         <section class="hoshi-hero">
             <div class="hoshi-hero-left">
-                <span class="hoshi-hero-tag">{{ _theme.hero_highlight_text or '#GalacticLive' }}</span>
-                <h1 class="hoshi-hero-title">{{ site_title or 'Noteblog' }}</h1>
-                <p class="hoshi-hero-desc">{{ _theme.hero_tagline or '少女与星尘，共同编织的冒险日志' }}</p>
+                <h2 class="hoshi-hero-title">{{ _theme.hero_character_name or site_title or 'Noteblog' }}</h2>
+                <p class="hoshi-hero-desc">{{ _theme.hero_tagline or site_description or '欢迎来到我的博客' }}</p>
                 <div class="hoshi-hero-actions">
-                    <a class="hoshi-pill-btn primary" href="{{ _theme.hero_cta_link or '/archives' }}">{{ _theme.hero_cta_text or '开始巡航' }}</a>
-                    <a class="hoshi-pill-btn secondary" href="/hoshizora/gallery">应援相册</a>
-                </div>
-            </div>
-            <div class="hoshi-hero-right">
-                <div class="hoshi-chibi-card">
-                    <div class="avatar">☆</div>
-                    <h4>{{ _theme.hero_character_name or '星野澪' }}</h4>
-                    <p>“留下一枚心动，世界就会亮起来。”</p>
-                    <div class="hoshi-chibi-tags">
-                        <span>Vocal</span>
-                        <span>Drift</span>
-                        <span>Magic</span>
-                    </div>
+                    <a class="hoshi-pill-btn primary" href="{{ _theme.hero_cta_link or '/archives' }}">{{ _theme.hero_cta_text or '查看文章' }}</a>
                 </div>
             </div>
         </section>
@@ -179,12 +161,7 @@
                         <div class="hoshi-widget hoshi-profile-card">
                             <img src="{{ _theme.site_logo or _default_avatar }}" alt="{{ site_title }}">
                             <h3>{{ site_title or 'Noteblog' }}</h3>
-                            <p>{{ site_description or '记录我的星尘日记。' }}</p>
-                            <div class="hoshi-divider"></div>
-                            <div class="hoshi-tag-row">
-                                <span class="hoshi-meta-pill">Online</span>
-                                <span class="hoshi-meta-pill">萌力</span>
-                            </div>
+                            <p>{{ site_description or '欢迎来到我的博客' }}</p>
                         </div>
                         <div class="hoshi-widget">
                             <h4 class="hoshi-widget-title">最新发表</h4>
@@ -223,8 +200,8 @@
         </main>
 
         <footer class="hoshi-footer">
-            <p>{{ _theme.footer_text or '© 2025 星空幻奏主题 - 记录每一次心动。' }}</p>
-            <p>Powered by <a href="https://github.com/streetartist/noteblog" target="_blank" rel="noopener">Noteblog</a> · Theme Hoshizora</p>
+            <p>{{ _theme.footer_text or '© 2025 Powered by Noteblog' }}</p>
+            <p><a href="https://github.com/streetartist/noteblog" target="_blank" rel="noopener">Noteblog</a> · Theme Hoshizora</p>
             {% if plugin_hooks and plugin_hooks.footer %}
                 {% for block in plugin_hooks.footer %}
                     {{ block|safe }}
