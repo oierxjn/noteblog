@@ -24,6 +24,18 @@ def api_response(data=None, message='', status=200, error=None):
         response['error'] = error
     return jsonify(response), status
 
+
+def _coerce_int_or_none(value):
+    """Convert blank string to None, numeric strings to int, keep ints."""
+    if value is None or (isinstance(value, str) and value.strip() == ''):
+        return None
+    if isinstance(value, int):
+        return value
+    try:
+        return int(value)
+    except Exception:
+        raise ValueError('invalid integer')
+
 # 文章 API
 @bp.route('/posts')
 def api_posts():
@@ -352,10 +364,16 @@ def api_create_comment():
     if post.comment_status != 'open':
         return api_response(message='该文章不允许评论', status=403)
     
+    # Normalize empty string -> None, accept numeric strings as ints
+    try:
+        parent_id = _coerce_int_or_none(data.get('parent_id'))
+    except ValueError:
+        return api_response(message='父评论ID无效', status=400)
+
     comment = Comment(
         content=data['content'],
         post_id=data['post_id'],
-        parent_id=data.get('parent_id'),
+        parent_id=parent_id,
         author_ip=request.remote_addr,
         user_agent=request.headers.get('User-Agent', '')
     )
