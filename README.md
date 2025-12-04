@@ -331,6 +331,8 @@ EOF
 
 创建 `/etc/systemd/system/noteblog.service`：
 
+***具体的路径请根据实际情况修改！！！***
+
 ```
 [Unit]
 Description=Noteblog Service
@@ -340,14 +342,31 @@ After=network.target
 User=noteblog
 Group=noteblog
 WorkingDirectory=/var/www/noteblog
-Environment="PATH=/var/www/noteblog/venv/bin"
-EnvironmentFile=/var/www/noteblog/.env
-ExecStart=/var/www/noteblog/venv/bin/gunicorn -w 4 -b 127.0.0.1:8000 run:app
+EnvironmentFile=-/var/www/noteblog/.env
+Environment="PATH=/var/www/noteblog/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+# 设置 Gunicorn 进程的日志级别，可选值有 debug, info, warning, error, critical
+# 默认是 info，你可以根据需要调整。
+ExecStart=/var/www/noteblog/bin/python3 -m gunicorn -w 4 -b 127.0.0.1:8848 --log-level info run:app
 Restart=always
 RestartSec=5
 
+# === 日志输出 ===
+
+# 1. 确保标准输出和标准错误输出到 Journald (Systemd 的日志系统)
+StandardOutput=journal
+StandardError=journal
+
+# 2. 将日志级别设置为 info，并给日志命名，便于 journalctl 过滤和查看
+SyslogIdentifier=noteblog-gunicorn
+
 [Install]
 WantedBy=multi-user.target
+```
+
+支持获取gunicorn的运行日志：
+
+```bash
+sudo journalctl -t noteblog-gunicorn -f
 ```
 
 加载并启动：
@@ -365,35 +384,63 @@ sudo systemctl status noteblog
 ```
 server {
     listen 80;
-    server_name blog.example.com;
+    server_name example.com; # 请修改为你的域名
 
+    # 允许客户端上传的最大文件大小
     client_max_body_size 32m;
 
-    # 为插件静态文件做专门映射
+    # 设置根目录
+    root /var/www/noteblog; 
+    index index.html index.htm;
+
+    # 日志配置
+    access_log  /var/log/nginx/noteblog.access.log;
+    error_log   /var/log/nginx/noteblog.error.log;
+
+    # --- 静态资源优化 ---
     location ~ ^/static/plugins/([^/]+)/(.+)$ {
         alias /var/www/noteblog/plugins/$1/static/$2;
-        access_log off;
         expires 7d;
+        access_log off;
         add_header Cache-Control "public";
     }
 
     location /static/ {
         alias /var/www/noteblog/app/static/;
-        access_log off;
         expires 7d;
+        access_log off;
         add_header Cache-Control "public";
     }
 
     location /uploads/ {
         alias /var/www/noteblog/instance/uploads/;
+        expires 7d;
+        access_log off;
     }
 
+    # --- 反向代理设置 ---
     location / {
         proxy_pass http://127.0.0.1:8000;
+        
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header REMOTE-HOST $remote_addr;
+        proxy_set_header X-Host $host:$server_port;
+        proxy_set_header X-Scheme $scheme;
+        
+        # 3. 调试与缓存头
+        add_header X-Cache $upstream_cache_status;
+
+        # 4. 超时设置
+        proxy_connect_timeout 30s;
+        proxy_read_timeout 86400s;
+        proxy_send_timeout 30s;
+
+        # 5. 协议版本与 WebSocket
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
     }
 }
 ```
