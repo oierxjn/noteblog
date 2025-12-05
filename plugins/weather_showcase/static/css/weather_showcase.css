@@ -1,0 +1,117 @@
+.weather-showcase {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+}
+.weather-showcase .weather-stage {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.weather-showcase canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+.weather-aurora-layer {
+    position: fixed;
+    top: -8vh;
+    left: -20vw;
+    width: 140vw;
+    height: 90vh;
+    pointer-events: none;
+    filter: url(#weather-aurora-noise) blur(10px) saturate(130%);
+    mix-blend-mode: screen;
+    opacity: 0;
+    transform: rotate(-8deg) scale(1.05);
+    transition: opacity 0.4s ease;
+}
+.weather-aurora-layer::before,
+.weather-aurora-layer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        130% 120% at 70% 110%,
+        transparent 40%,
+        var(--weather-aurora-core, rgba(125, 211, 252, 0.9)) 58%,
+        var(--weather-aurora-glow, rgba(125, 211, 252, 0.5)) 70%,
+        var(--weather-aurora-fade, rgba(125, 211, 252, 0.18)) 84%,
+        transparent 92%
+    );
+    opacity: 0.9;
+    transform: rotate(12deg) scaleX(1.08);
+}
+.weather-aurora-layer::after {
+    opacity: 0.55;
+    transform: rotate(-6deg) scale(1.12) translateY(-6%);
+    filter: blur(2px);
+}
+.weather-showcase[data-weather-type="aurora"] .weather-aurora-layer {
+    opacity: 1;
+}
+.weather-aurora-filter {
+    position: absolute;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+.weather-showcase .weather-toggle {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: none;
+    background: rgba(17, 24, 39, 0.78);
+    color: #e5e7eb;
+    font-size: 14px;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    pointer-events: auto;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.24);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.weather-showcase .weather-toggle:hover { transform: translateY(-2px); }
+.weather-showcase .weather-toggle[aria-pressed="true"] { background: rgba(59, 130, 246, 0.9); }
+.weather-showcase .weather-legend {
+    position: fixed;
+    right: 18px;
+    bottom: 60px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.82);
+    color: #0f172a;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+}
+.weather-showcase .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #60a5fa, #22d3ee);
+    box-shadow: 0 0 12px rgba(96, 165, 250, 0.8);
+}
+.weather-showcase .legend-text { white-space: nowrap; }
+.weather-showcase[data-hidden="true"] {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+@media (max-width: 640px) {
+    .weather-showcase .weather-toggle { right: 12px; bottom: 12px; }
+    .weather-showcase .weather-legend { right: 12px; bottom: 52px; }
+}
